@@ -4,8 +4,6 @@
   <h3><b>A Minimalist Campus Management Information System</b></h3>  
   <p>A native, modern academic web portal engineered for high performance and clean data routing.</p>
   
-  [![Status](https://img.shields.io/badge/Status-Active-success.svg?style=flat)]()
-  [![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20LAN%20%7C%20Fedora-red.svg?style=flat)]()
   [![Environment](https://img.shields.io/badge/Stack-Native%20PHP%20%7C%20MariaDB-blue.svg?style=flat)]()
   [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat)]()
 </div>
@@ -27,8 +25,12 @@
 ├── config/
 │   ├── db.php                        # Production PDO database client instance
 │   └── db.example.php                # Local environment template configuration
+├── admin/
+│   └── dashboard.php                 # Administrative system controls, user provisioning, and portal configuration panel.
+├── staff/
+│   └── dashboard.php                 # Academic records management, student enrollment registry, and administrative operations.
 ├── lecturer/
-│   └── dashboard.php                 # Instructor management workspace index
+│   └── dashboard.php                 # Instructor grade management, course syllabus assignment, and student evaluation panel.
 ├── student/
 │   ├── profil/
 │   │   └── index.php                 # Student biodata & profile viewer
