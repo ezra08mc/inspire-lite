@@ -1,8 +1,8 @@
-name: CD - Deploy to Sentinel Server
+name: CD - Deploy to Sentinel Server (Active Dev Phase)
 
 on:
   push:
-    branches: [ main ] # Akan jalan setiap kamu push ke main
+    branches: [ dev ]
 
 jobs:
   deploy:
@@ -16,7 +16,6 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
-          cd /var/www/html # Sesuaikan dengan folder project kamu
-          git pull origin main
-          # Jika ada langkah tambahan (misal restart nginx atau build)
-          # sudo systemctl restart nginx
+          cd /var/www/html/inspire-lite/dev
+          git checkout dev     
+          git pull origin dev 
