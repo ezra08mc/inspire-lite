@@ -165,3 +165,4 @@ Access the application at `http://localhost:8000`
 - [ ] Attendance tracking module
 - [ ] Grade input module
 - [ ] Student affairs features
+- [ ] Student affairs features
