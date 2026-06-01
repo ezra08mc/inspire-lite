@@ -1,0 +1,22 @@
+name: CD - Deploy to Sentinel Server
+
+on:
+  push:
+    branches: [ main ] # Akan jalan setiap kamu push ke main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd /var/www/html # Sesuaikan dengan folder project kamu
+          git pull origin main
+          # Jika ada langkah tambahan (misal restart nginx atau build)
+          # sudo systemctl restart nginx
