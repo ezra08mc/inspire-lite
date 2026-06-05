@@ -2,12 +2,8 @@
 session_start();
 require_once "config/db.php";
 
-if (isset($_SESSION["role"])) {
-    if ($_SESSION["role"] === 'admin') {
-        header("Location: admin/index.php");
-    } else {
-        header("Location: student/index.php"); 
-    }
+if (!isset($_SESSION["role"])) {
+    header("Location: login.php");
     exit();
 }
 
