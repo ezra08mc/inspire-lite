@@ -3,7 +3,7 @@ session_start();
 require_once "config/db.php";
 
 if (!isset($_SESSION["role"])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 
