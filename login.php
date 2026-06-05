@@ -2,7 +2,6 @@
 session_start();
 require_once "config/db.php";
 
-// PERBAIKAN: Jika user SUDAH login, langsung lempar ke index.php agar diarahkan ke dashboard
 if (isset($_SESSION["role"])) {
     header("Location: index.php");
     exit();
