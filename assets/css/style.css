@@ -268,6 +268,29 @@ body.dashboard-page {
   overflow-x: hidden;
 }
 
+/* Fallbacks and layout stability for dashboard (useful if JS doesn't run) */
+@media (min-width: 769px) {
+  body.dashboard-page .main-content {
+    margin-left: 260px;
+    transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body.dashboard-page .sidebar {
+    transform: translateX(0);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* Ensure sidebar overlays correctly on small screens when opened */
+@media (max-width: 768px) {
+  .sidebar {
+    z-index: 3000;
+  }
+  .mobile-bottom-navigation-dock-bar {
+    z-index: 2999;
+  }
+}
+
 html.preload-collapsed .sidebar {
   transform: translateX(-260px) !important;
 }
