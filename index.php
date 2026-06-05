@@ -6,7 +6,9 @@ if (!isset($_SESSION["role"])) {
     exit();
 }
 
-switch ($_SESSION["role"]) {
+$role = strtolower($_SESSION["role"]);
+
+switch ($role) {
     case "student":
         header("Location: student/index.php");
         break;
