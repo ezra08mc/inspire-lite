@@ -17,9 +17,7 @@ $semester_label = null;
 $data_errors = [];
 
 try {
-    $stmt = $pdo->prepare(
-        "SELECT nim, first_name, last_name, study_program, cohort FROM students WHERE user_id = :user_id LIMIT 1",
-    );
+    $stmt = $pdo->prepare("SELECT nim, first_name, last_name, study_program, cohort FROM students WHERE user_id = :user_id LIMIT 1");
     $stmt->execute([":user_id" => $user_id]);
     $student_data = $stmt->fetch();
     if ($student_data) {
@@ -37,9 +35,7 @@ try {
 
 if (!empty($nim)) {
     try {
-        $stmt = $pdo->prepare(
-            "SELECT academic_year, semester_type FROM enrollments WHERE nim = :nim ORDER BY id DESC LIMIT 1",
-        );
+        $stmt = $pdo->prepare("SELECT academic_year, semester_type FROM enrollments WHERE nim = :nim ORDER BY id DESC LIMIT 1");
         $stmt->execute([":nim" => $nim]);
         $enrollment = $stmt->fetch();
         if ($enrollment) {
@@ -65,9 +61,7 @@ $stats = [
     "sks_semester" => null,
 ];
 try {
-    $stmt = $pdo->prepare(
-        "SELECT sks_ditempuh, ipk_kumulatif, ip_semester, sks_semester FROM student_academic_stats WHERE user_id = :user_id LIMIT 1",
-    );
+    $stmt = $pdo->prepare("SELECT sks_ditempuh, ipk_kumulatif, ip_semester, sks_semester FROM student_academic_stats WHERE user_id = :user_id LIMIT 1");
     $stmt->execute([":user_id" => $user_id]);
     $db_stats = $stmt->fetch();
     if ($db_stats) {
@@ -80,9 +74,7 @@ try {
 
 $announcements = [];
 try {
-    $stmt = $pdo->query(
-        "SELECT type, badge_class, date_text, title, content, author FROM announcements ORDER BY id DESC",
-    );
+    $stmt = $pdo->query("SELECT type, badge_class, date_text, title, content, author FROM announcements ORDER BY id DESC");
     $announcements = $stmt->fetchAll();
 } catch (PDOException $e) {
     $data_errors[] = "Gagal memuat pengumuman.";
@@ -91,9 +83,7 @@ try {
 
 $tasks = [];
 try {
-    $stmt = $pdo->prepare(
-        "SELECT id, name, deadline_text, is_alert, is_completed FROM active_tasks WHERE user_id = :user_id ORDER BY id ASC",
-    );
+    $stmt = $pdo->prepare("SELECT id, name, deadline_text, is_alert, is_completed FROM active_tasks WHERE user_id = :user_id ORDER BY id ASC");
     $stmt->execute([":user_id" => $user_id]);
     $tasks = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -103,19 +93,14 @@ try {
 
 $agenda = [];
 try {
-    $stmt = $pdo->prepare(
-        "SELECT nama_mata_kuliah, jam_mulai, jam_selesai, ruangan, tanggal, hari
-         FROM jadwal
-         WHERE tanggal >= CURDATE()
-         ORDER BY tanggal ASC, jam_mulai ASC",
-    );
+    $stmt = $pdo->prepare("SELECT nama_mata_kuliah, jam_mulai, jam_selesai, ruangan, tanggal, hari FROM jadwal WHERE tanggal >= CURDATE() ORDER BY tanggal ASC, jam_mulai ASC");
     $stmt->execute();
     $db_agenda = $stmt->fetchAll();
 
-    $today = new DateTime()->format("Y-m-d");
+    $today = (new DateTime())->format("Y-m-d");
 
     foreach ($db_agenda as $item) {
-        $date_badge = new DateTime($item["tanggal"])->format("d M");
+        $date_badge = (new DateTime($item["tanggal"]))->format("d M");
         if ($item["tanggal"] === $today) {
             $date_badge = "Hari Ini";
         }
@@ -123,10 +108,7 @@ try {
         $agenda[] = [
             "date_badge" => $date_badge,
             "title" => $item["nama_mata_kuliah"],
-            "time_range" =>
-                new DateTime($item["jam_mulai"])->format("H:i") .
-                " – " .
-                new DateTime($item["jam_selesai"])->format("H:i"),
+            "time_range" => (new DateTime($item["jam_mulai"]))->format("H:i") . " – " . (new DateTime($item["jam_selesai"]))->format("H:i"),
             "location" => $item["ruangan"],
             "dot_color" => "blue",
         ];
@@ -138,9 +120,7 @@ try {
 
 $notifications = [];
 try {
-    $stmt = $pdo->query(
-        "SELECT title, content, created_at FROM student_notifications ORDER BY created_at DESC LIMIT 5",
-    );
+    $stmt = $pdo->query("SELECT title, content, created_at FROM student_notifications ORDER BY created_at DESC LIMIT 5");
     $notifications = $stmt->fetchAll();
 } catch (PDOException $e) {
     $data_errors[] = "Gagal memuat notifikasi.";
@@ -153,9 +133,7 @@ $initials = "";
 if (!empty($student_name)) {
     $name_parts = preg_split("/\s+/", trim($student_name));
     $first_name = $name_parts[0] ?? "";
-    $initials = strtoupper(
-        substr($name_parts[0] ?? "", 0, 1) . substr($name_parts[1] ?? "", 0, 1),
-    );
+    $initials = strtoupper(substr($name_parts[0] ?? "", 0, 1) . substr($name_parts[1] ?? "", 0, 1));
 } elseif (!empty($nim)) {
     $initials = strtoupper(substr($nim, 0, 2));
 }
@@ -178,31 +156,22 @@ $calendar_weeks = [];
 $calendar_marks = [];
 try {
     $current_date = new DateTime();
-    $month_number = (int) $current_date->format("n");
-    $year_number = (int) $current_date->format("Y");
-    $current_day = (int) $current_date->format("j");
+    $month_number = (int)$current_date->format("n");
+    $year_number = (int)$current_date->format("Y");
+    $current_day = (int)$current_date->format("j");
     $month_names = [
-        1 => "Januari",
-        2 => "Februari",
-        3 => "Maret",
-        4 => "April",
-        5 => "Mei",
-        6 => "Juni",
-        7 => "Juli",
-        8 => "Agustus",
-        9 => "September",
-        10 => "Oktober",
-        11 => "November",
-        12 => "Desember",
+        1 => "Januari", 2 => "Februari", 3 => "Maret", 4 => "April",
+        5 => "Mei", 6 => "Juni", 7 => "Juli", 8 => "Agustus",
+        9 => "September", 10 => "Oktober", 11 => "November", 12 => "Desember"
     ];
     $current_month_label = $month_names[$month_number] . " " . $year_number;
 
     $first_day = new DateTime($current_date->format("Y-m-01"));
-    $days_in_month = (int) $current_date->format("t");
-    $start_weekday = (int) $first_day->format("w");
+    $days_in_month = (int)$current_date->format("t");
+    $start_weekday = (int)$first_day->format("w");
 
     $total_cells = $start_weekday + $days_in_month;
-    $weeks = (int) ceil($total_cells / 7);
+    $weeks = (int)ceil($total_cells / 7);
 
     for ($week = 0; $week < $weeks; $week++) {
         $week_days = [];
@@ -218,9 +187,7 @@ try {
         $calendar_weeks[] = $week_days;
     }
 
-    $stmt_jadwal = $pdo->prepare(
-        "SELECT tanggal FROM jadwal WHERE MONTH(tanggal) = :month AND YEAR(tanggal) = :year",
-    );
+    $stmt_jadwal = $pdo->prepare("SELECT tanggal FROM jadwal WHERE MONTH(tanggal) = :month AND YEAR(tanggal) = :year");
     $stmt_jadwal->execute([
         ":month" => $month_number,
         ":year" => $year_number,
@@ -228,7 +195,7 @@ try {
     $jadwal_in_month = $stmt_jadwal->fetchAll();
 
     foreach ($jadwal_in_month as $item) {
-        $day_number = (int) new DateTime($item["tanggal"])->format("j");
+        $day_number = (int)(new DateTime($item["tanggal"]))->format("j");
         if ($day_number >= 1 && $day_number <= $days_in_month) {
             $calendar_marks[$day_number] = "blue";
         }
@@ -239,8 +206,6 @@ try {
 }
 
 $unread_count = 0;
-
-// The new notifications table doesn't have `is_read` status.
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -252,7 +217,6 @@ $unread_count = 0;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
-
     <script>
         (function() {
             const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -289,9 +253,7 @@ $unread_count = 0;
             </div>
             <div class="submenu-items" style="display: none;">
                 <a href="announcements.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1.5 9c-.83 0-1.5-.67-1.5-1.5S17.67 8 18.5 8s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Pengumuman <span class="nav-badge"><?= count(
-                        $announcements,
-                    ) ?></span>
+                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1.5 9c-.83 0-1.5-.67-1.5-1.5S17.67 8 18.5 8s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Pengumuman <span class="nav-badge"><?= count($announcements) ?></span>
                 </a>
                 <a href="news.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> Berita
@@ -320,11 +282,7 @@ $unread_count = 0;
                     <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Presensi
                 </a>
                 <a href="tugas.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-2 16H8v-2h4v2zm3-4H8v-2h7v2zm0-4H8V8h7v2z"/></svg> Tugas <span class="nav-badge"><?= count(
-                        array_filter($tasks, function ($t) {
-                            return !$t["is_completed"];
-                        }),
-                    ) ?></span>
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-2 16H8v-2h4v2zm3-4H8v-2h7v2zm0-4H8V8h7v2z"/></svg> Tugas <span class="nav-badge"><?= count(array_filter($tasks, function ($t) { return !$t["is_completed"]; })) ?></span>
                 </a>
                 <a href="bimbingan.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Bimbingan Akademik
@@ -379,14 +337,8 @@ $unread_count = 0;
                                     <div class="dropdown-item-node">
                                         <div class="node-icon">🔔</div>
                                         <div class="node-body">
-                                            <p><?= htmlspecialchars(
-                                                $n["title"],
-                                            ) ?></p>
-                                            <span><?= htmlspecialchars(
-                                                new DateTime(
-                                                    $n["created_at"],
-                                                )->format("d M Y, H:i"),
-                                            ) ?></span>
+                                            <p><?= htmlspecialchars($n["title"]) ?></p>
+                                            <span><?= htmlspecialchars((new DateTime($n["created_at"]))->format("d M Y, H:i")) ?></span>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -397,30 +349,18 @@ $unread_count = 0;
 
                 <div class="account-interaction-wrapper pc-only-wrapper">
                     <div class="profile-clickable-zone" id="profileMenuBtn">
-                        <div class="avatar-circle"><?= htmlspecialchars(
-                            $initials,
-                        ) ?></div>
+                        <div class="avatar-circle"><?= htmlspecialchars($initials) ?></div>
                         <div class="user-meta">
-                            <span class="user-name-text"><?= htmlspecialchars(
-                                $display_name ?: "",
-                            ) ?></span>
-                            <span class="user-id-text"><?= htmlspecialchars(
-                                $nim,
-                            ) ?></span>
+                            <span class="user-name-text"><?= htmlspecialchars($display_name ?: "") ?></span>
+                            <span class="user-id-text"><?= htmlspecialchars($nim) ?></span>
                         </div>
                     </div>
                     <div class="dropdown-panel-account" id="accountDropdown">
                         <div class="dropdown-account-header">
-                            <div class="avatar-circle"><?= htmlspecialchars(
-                                $initials,
-                            ) ?></div>
+                            <div class="avatar-circle"><?= htmlspecialchars($initials) ?></div>
                             <div>
-                                <p class="head-title"><?= htmlspecialchars(
-                                    $display_name ?: "",
-                                ) ?></p>
-                                <p class="head-sub"><?= htmlspecialchars(
-                                    $nim,
-                                ) ?></p>
+                                <p class="head-title"><?= htmlspecialchars($display_name ?: "") ?></p>
+                                <p class="head-sub"><?= htmlspecialchars($nim) ?></p>
                             </div>
                         </div>
                         <a href="profile.php" class="account-drop-link">
@@ -443,9 +383,7 @@ $unread_count = 0;
 
         <main class="dashboard-viewport">
             <?php if (!empty($data_errors)): ?>
-                <div class="empty-fallback-text border-box-pad"><?= htmlspecialchars(
-                    $data_errors[0],
-                ) ?></div>
+                <div class="empty-fallback-text border-box-pad"><?= htmlspecialchars($data_errors[0]) ?></div>
             <?php endif; ?>
             <section class="hero-banner">
                 <div class="hero-title">
@@ -461,27 +399,19 @@ $unread_count = 0;
                 <div class="metrics-row">
                     <div class="metric-card">
                         <span class="metric-label">SKS DITEMPUH</span>
-                        <span class="metric-value"><?= htmlspecialchars(
-                            $stats["sks_ditempuh"],
-                        ) ?></span>
+                        <span class="metric-value"><?= htmlspecialchars($stats["sks_ditempuh"]) ?></span>
                     </div>
                     <div class="metric-card">
                         <span class="metric-label">IPK KUMULATIF</span>
-                        <span class="metric-value"><?= htmlspecialchars(
-                            $stats["ipk_kumulatif"],
-                        ) ?></span>
+                        <span class="metric-value"><?= htmlspecialchars($stats["ipk_kumulatif"]) ?></span>
                     </div>
                     <div class="metric-card">
                         <span class="metric-label">IP SEMESTER</span>
-                        <span class="metric-value"><?= htmlspecialchars(
-                            $stats["ip_semester"],
-                        ) ?></span>
+                        <span class="metric-value"><?= htmlspecialchars($stats["ip_semester"]) ?></span>
                     </div>
                     <div class="metric-card">
                         <span class="metric-label">SKS SEMESTER</span>
-                        <span class="metric-value"><?= htmlspecialchars(
-                            $stats["sks_semester"],
-                        ) ?></span>
+                        <span class="metric-value"><?= htmlspecialchars($stats["sks_semester"]) ?></span>
                     </div>
                 </div>
             </section>
@@ -548,33 +478,21 @@ $unread_count = 0;
                             <?php foreach ($announcements as $annc): ?>
                                 <div class="annc-node">
                                     <div class="annc-top-line">
-                                        <div class="annc-icon-frame <?= htmlspecialchars(
-                                            $annc["badge_class"],
-                                        ) ?>">
+                                        <div class="annc-icon-frame <?= htmlspecialchars($annc["badge_class"]) ?>">
                                             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
                                         </div>
                                         <div class="annc-title-area">
                                             <div class="annc-meta">
-                                                <?php if (
-                                                    $annc["type"] === "PENTING"
-                                                ): ?>
+                                                <?php if ($annc["type"] === "PENTING"): ?>
                                                     <span class="label-badge red">PENTING</span>
                                                 <?php endif; ?>
-                                                <span class="annc-date"><?= htmlspecialchars(
-                                                    $annc["date_text"],
-                                                ) ?></span>
+                                                <span class="annc-date"><?= htmlspecialchars($annc["date_text"]) ?></span>
                                             </div>
-                                            <h4><?= htmlspecialchars(
-                                                $annc["title"],
-                                            ) ?></h4>
+                                            <h4><?= htmlspecialchars($annc["title"]) ?></h4>
                                         </div>
                                     </div>
-                                    <p class="annc-body-text"><?= htmlspecialchars(
-                                        $annc["content"],
-                                    ) ?></p>
-                                    <span class="annc-dept"><?= htmlspecialchars(
-                                        $annc["author"],
-                                    ) ?></span>
+                                    <p class="annc-body-text"><?= htmlspecialchars($annc["content"]) ?></p>
+                                    <span class="annc-dept"><?= htmlspecialchars($annc["author"]) ?></span>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -593,25 +511,15 @@ $unread_count = 0;
                             <div class="empty-fallback-text border-box-pad">Seluruh tugas perkuliahan telah diselesaikan.</div>
                         <?php else: ?>
                             <?php foreach ($tasks as $task): ?>
-                                <div class="task-node <?= $task["is_completed"]
-                                    ? "done"
-                                    : "" ?>">
+                                <div class="task-node <?= $task["is_completed"] ? "done" : "" ?>">
                                     <div class="task-checkbox-frame">
                                         <?php if ($task["is_completed"]): ?>
-                                            <svg viewBox="0 0 24 24" class="check-svg"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                            <svg viewBox="0 0 24 24         " class="check-svg"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                                         <?php endif; ?>
                                     </div>
                                     <div class="task-node-details">
-                                        <span class="task-node-title"><?= htmlspecialchars(
-                                            $task["name"],
-                                        ) ?></span>
-                                        <span class="task-node-time <?= $task[
-                                            "is_alert"
-                                        ]
-                                            ? "alert"
-                                            : "" ?>"><?= htmlspecialchars(
-    $task["deadline_text"],
-) ?></span>
+                                        <span class="task-node-title"><?= htmlspecialchars($task["name"]) ?></span>
+                                        <span class="task-node-time <?= $task["is_alert"] ? "alert" : "" ?>"><?= htmlspecialchars($task["deadline_text"]) ?></span>
                                     </div>
                                     <svg class="chevron-right-item" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                                 </div>
@@ -623,13 +531,9 @@ $unread_count = 0;
                 <div class="content-card">
                     <div class="card-top">
                         <h3>Agenda Mendatang</h3>
-                        <select class="agenda-month-dropdown" <?= $current_month_label
-                            ? ""
-                            : "disabled" ?>>
+                        <select class="agenda-month-dropdown" <?= $current_month_label ? "" : "disabled" ?>>
                             <?php if ($current_month_label): ?>
-                                <option><?= htmlspecialchars(
-                                    $current_month_label,
-                                ) ?></option>
+                                <option><?= htmlspecialchars($current_month_label) ?></option>
                             <?php else: ?>
                                 <option>Tidak tersedia</option>
                             <?php endif; ?>
@@ -657,16 +561,13 @@ $unread_count = 0;
                                             }
                                             if (!empty($calendar_marks[$day])) {
                                                 $day_classes[] = "marked";
-                                                $day_classes[] =
-                                                    $calendar_marks[$day];
+                                                $day_classes[] = $calendar_marks[$day];
                                             }
                                             ?>
-                                            <span class="<?= htmlspecialchars(
-                                                implode(" ", $day_classes),
-                                            ) ?>"><?= $day ?></span>
+                                            <span class="<?= htmlspecialchars(implode(" ", $day_classes)) ?>"><?= $day ?></span>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
-                                <?php endforeach; ?>
+                                <?php foreach; ?>
                             </div>
                         </div>
 
@@ -692,24 +593,14 @@ $unread_count = 0;
                                 <?php foreach ($agenda as $item): ?>
                                     <div class="agenda-table-row">
                                         <div class="col-cell cell-date">
-                                            <span class="indicator-circle-bullet <?= htmlspecialchars(
-                                                $item["dot_color"],
-                                            ) ?>"></span>
-                                            <span class="date-lbl-txt"><?= htmlspecialchars(
-                                                $item["date_badge"],
-                                            ) ?></span>
+                                            <span class="indicator-circle-bullet <?= htmlspecialchars($item["dot_color"]) ?>"></span>
+                                            <span class="date-lbl-txt"><?= htmlspecialchars($item["date_badge"]) ?></span>
                                         </div>
                                         <div class="col-cell cell-mid-desc">
-                                            <span class="item-main-headline"><?= htmlspecialchars(
-                                                $item["title"],
-                                            ) ?></span>
-                                            <span class="item-sub-clock"><?= htmlspecialchars(
-                                                $item["time_range"],
-                                            ) ?></span>
+                                            <span class="item-main-headline"><?= htmlspecialchars($item["title"]) ?></span>
+                                            <span class="item-sub-clock"><?= htmlspecialchars($item["time_range"]) ?></span>
                                         </div>
-                                        <div class="col-cell cell-room-loc"><?= htmlspecialchars(
-                                            $item["location"],
-                                        ) ?></div>
+                                        <div class="col-cell cell-room-loc"><?= htmlspecialchars($item["location"]) ?></div>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -721,13 +612,9 @@ $unread_count = 0;
 
         <div class="mobile-exclusive-profile-flyout" id="mobileProfileFlyout">
             <div class="dropdown-account-header">
-                <div class="avatar-circle"><?= htmlspecialchars(
-                    $initials,
-                ) ?></div>
+                <div class="avatar-circle"><?= htmlspecialchars($initials) ?></div>
                 <div>
-                    <p class="head-title"><?= htmlspecialchars(
-                        $display_name ?: "",
-                    ) ?></p>
+                    <p class="head-title"><?= htmlspecialchars($display_name ?: "") ?></p>
                     <p class="head-sub"><?= htmlspecialchars($nim) ?></p>
                 </div>
             </div>
