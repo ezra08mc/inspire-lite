@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <link href="./assets/css/style.css" rel="stylesheet">
     <script src="./assets/js/main.js"></script>
 </head>
-<body>
+<body class="login-page">
     <header class="top-navbar">
         <a href="https://www.unsrat.ac.id" target="_blank" class="nav-link">www.unsrat.ac.id</a>
         <div class="social-icons">
@@ -85,7 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 <button type="submit" class="btn-signin">LOGIN</button>
             </form>
-            <a href="#" class="forgot-password-link">Lupa Password</a>
+            <a href="#" class="forgot-password-link">Lupa Password?</a>
         </div>
     </div>
 
