@@ -131,6 +131,107 @@ if (!empty($admin_name)) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+        .action-btn {
+            background: transparent;
+            border: 1px solid rgba(55, 65, 81, 0.16);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            color: #1f2937;
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .action-btn:hover {
+            background-color: rgba(15, 23, 42, 0.05);
+        }
+        .edit-btn {
+            border-color: #22c55e;
+            color: #15803d;
+        }
+        .edit-btn:hover {
+            background-color: rgba(16, 185, 129, 0.12);
+        }
+        .delete-btn {
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+        .delete-btn:hover {
+            background-color: rgba(239, 68, 68, 0.12);
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal-panel {
+            width: min(560px, 100%);
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 28px 80px rgba(15, 23, 42, 0.18);
+            overflow: hidden;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: #111827;
+        }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        .modal-body {
+            display: grid;
+            gap: 14px;
+            padding: 20px 24px;
+        }
+        .modal-body label {
+            display: grid;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #374151;
+        }
+        .modal-body input {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 10px 12px;
+            color: #111827;
+            background: #f8fafc;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 24px 24px;
+        }
+        .cancel-btn {
+            border-color: #9ca3af;
+            color: #4b5563;
+            background: #f3f4f6;
+        }
+        .save-btn {
+            border-color: #2563eb;
+            color: #1d4ed8;
+            background: #eff6ff;
+        }
+    </style>
     <script>
         (function() {
             const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -142,6 +243,132 @@ if (!empty($admin_name)) {
         })();
     </script>
     <script src="../../assets/js/main.js" defer></script>
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('userSearchInput');
+                const counter = document.getElementById('userListCount');
+                const noResults = document.getElementById('userSearchNoResults');
+                const getRows = () => Array.from(document.querySelectorAll('.agenda-table-wrapper .agenda-table-row')).filter(row => row !== noResults);
+                const editModal = document.getElementById('userEditModal');
+                const editForm = document.getElementById('userEditForm');
+                const closeEditModal = document.getElementById('closeEditModal');
+                const cancelEdit = document.getElementById('cancelEdit');
+                const editUsername = document.getElementById('editUsername');
+                const editRole = document.getElementById('editRole');
+                const editFullName = document.getElementById('editFullName');
+                const editExternalId = document.getElementById('editExternalId');
+                const editDetail = document.getElementById('editDetail');
+                let activeRow = null;
+
+                function updateCount() {
+                    const visibleRows = getRows().filter(row => row.style.display !== 'none');
+                    if (counter) {
+                        counter.textContent = 'Menampilkan ' + visibleRows.length + ' akun';
+                    }
+                    if (noResults) {
+                        noResults.style.display = visibleRows.length === 0 ? 'grid' : 'none';
+                    }
+                }
+
+                function openEditModal(row) {
+                    activeRow = row;
+                    const data = row.dataset;
+                    editUsername.value = data.username || '';
+                    editRole.value = data.role || '';
+                    editFullName.value = data.fullName || '';
+                    editExternalId.value = data.externalId || '';
+                    editDetail.value = data.detail || '';
+                    if (editModal) {
+                        editModal.style.display = 'flex';
+                    }
+                }
+
+                function closeModal() {
+                    if (editModal) {
+                        editModal.style.display = 'none';
+                    }
+                    activeRow = null;
+                }
+
+                if (searchInput) {
+                    searchInput.addEventListener('input', function() {
+                        const query = this.value.trim().toLowerCase();
+                        let visibleCount = 0;
+
+const rows = getRows();
+                    rows.forEach(row => {
+                            const text = row.textContent.toLowerCase();
+                            const visible = query === '' || text.includes(query);
+                            row.style.display = visible ? 'grid' : 'none';
+                            if (visible) {
+                                visibleCount += 1;
+                            }
+                        });
+
+                        if (noResults) {
+                            noResults.style.display = visibleCount === 0 ? 'grid' : 'none';
+                        }
+                        if (counter) {
+                            counter.textContent = 'Menampilkan ' + visibleCount + ' akun';
+                        }
+                    });
+                }
+
+                document.querySelectorAll('.agenda-table-wrapper .action-btn').forEach(button => {
+                    button.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                        const row = this.closest('.agenda-table-row');
+                        if (!row) return;
+                        const action = this.dataset.action;
+                        if (action === 'edit') {
+                            openEditModal(row);
+                        }
+                        if (action === 'delete') {
+                            if (confirm('Hapus akun ini? Tindakan ini tidak dapat dibatalkan.')) {
+                                row.remove();
+                                updateCount();
+                            }
+                        }
+                    });
+                });
+
+                if (closeEditModal) {
+                    closeEditModal.addEventListener('click', closeModal);
+                }
+                if (cancelEdit) {
+                    cancelEdit.addEventListener('click', closeModal);
+                }
+                if (editModal) {
+                    editModal.addEventListener('click', function(event) {
+                        if (event.target === editModal) {
+                            closeModal();
+                        }
+                    });
+                }
+                if (editForm) {
+                    editForm.addEventListener('submit', function(event) {
+                        event.preventDefault();
+                        if (!activeRow) return;
+                        activeRow.dataset.username = editUsername.value;
+                        activeRow.dataset.role = editRole.value;
+                        activeRow.dataset.fullName = editFullName.value;
+                        activeRow.dataset.externalId = editExternalId.value;
+                        activeRow.dataset.detail = editDetail.value;
+
+                        const cells = activeRow.querySelectorAll('.col-cell');
+                        if (cells.length >= 4) {
+                            cells[0].textContent = editUsername.value;
+                            cells[1].textContent = editRole.value.toUpperCase();
+                            cells[2].textContent = editFullName.value;
+                            const external = editExternalId.value.trim() || '-';
+                            const detail = editDetail.value.trim() ? ' - ' + editDetail.value.trim() : '';
+                            cells[3].textContent = external + detail;
+                        }
+                        closeModal();
+                    });
+                }
+            });
+        </script>
 </head>
 <body class="dashboard-page">
     <aside class="sidebar" id="sidebarMenu">
@@ -318,16 +545,17 @@ if (!empty($admin_name)) {
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
                     <div class="search-container" style="flex: 1; max-width: 420px;">
                         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                        <input type="text" placeholder="Cari pengguna" style="width:100%; border:1px solid var(--border); border-radius: 0.75rem; padding: 10px 12px; font-size:0.92rem;">
+                        <input id="userSearchInput" type="text" placeholder="Cari pengguna" style="width:100%; border:1px solid var(--border); border-radius: 0.75rem; padding: 10px 12px; font-size:0.92rem; background:#ffffff; color:#111827;">
                     </div>
-                    <div style="color: #4b5563; font-size: 0.88rem;">Menampilkan <?= count($users) ?> akun</div>
+                    <div id="userListCount" style="color: #4b5563; font-size: 0.88rem;">Menampilkan <?= count($users) ?> akun</div>
                 </div>
                 <div class="agenda-table-wrapper">
-                    <div class="agenda-table-header" style="grid-template-columns: 160px 220px 1fr 1fr;">
+                    <div class="agenda-table-header" style="grid-template-columns: 160px 220px 1fr 1fr 150px;">
                         <span class="col-head">USERNAME</span>
                         <span class="col-head">PERAN</span>
                         <span class="col-head">NAMA</span>
                         <span class="col-head">DETAIL</span>
+                        <span class="col-head">AKSI</span>
                     </div>
                     <?php if (empty($users)): ?>
                         <div class="agenda-table-row" style="grid-template-columns: 1fr;">
@@ -335,14 +563,53 @@ if (!empty($admin_name)) {
                         </div>
                     <?php else: ?>
                         <?php foreach ($users as $user): ?>
-                            <div class="agenda-table-row" style="grid-template-columns: 160px 220px 1fr 1fr;">
+                            <div class="agenda-table-row" style="grid-template-columns: 160px 220px 1fr 1fr 150px;" data-user-id="<?= htmlspecialchars($user['id']) ?>" data-username="<?= htmlspecialchars($user['username']) ?>" data-role="<?= htmlspecialchars($user['role']) ?>" data-full-name="<?= htmlspecialchars($user['full_name']) ?>" data-external-id="<?= htmlspecialchars($user['external_id']) ?>" data-detail="<?= htmlspecialchars($user['detail']) ?>">
                                 <div class="col-cell" style="font-weight: 700; color: #111827;"><?= htmlspecialchars($user['username']) ?></div>
                                 <div class="col-cell" style="text-transform: uppercase; letter-spacing: 0.04em; color: #374151; font-size: 0.82rem;"><?= htmlspecialchars($user['role']) ?></div>
                                 <div class="col-cell" style="color: #111827;"><?= htmlspecialchars($user['full_name']) ?></div>
                                 <div class="col-cell" style="color: #4b5563; font-size: 0.92rem;"><?= htmlspecialchars($user['external_id'] ?: '-') ?><?= $user['detail'] ? ' - ' . htmlspecialchars($user['detail']) : '' ?></div>
+                                <div class="col-cell" style="display:flex; gap:0.5rem; justify-content:flex-end;">
+                                    <button type="button" class="action-btn edit-btn" data-action="edit">Edit</button>
+                                    <button type="button" class="action-btn delete-btn" data-action="delete">Hapus</button>
+                                </div>
                             </div>
                         <?php endforeach; ?>
+                        <div id="userSearchNoResults" class="agenda-table-row" style="display:none; grid-template-columns: 1fr;">
+                            <div class="col-cell" style="padding: 18px 12px; color: #6b7280; text-align: center;">Tidak ada akun yang cocok ditemukan.</div>
+                        </div>
                     <?php endif; ?>
+                </div>
+            </div>
+
+            <div id="userEditModal" class="modal-overlay" style="display:none;">
+                <div class="modal-panel">
+                    <div class="modal-header">
+                        <h3>Edit Akun</h3>
+                        <button type="button" class="modal-close-btn" id="closeEditModal">×</button>
+                    </div>
+                    <form id="userEditForm">
+                        <div class="modal-body">
+                            <label>Username
+                                <input id="editUsername" name="username" type="text" required>
+                            </label>
+                            <label>Peran
+                                <input id="editRole" name="role" type="text" readonly>
+                            </label>
+                            <label>Nama Lengkap
+                                <input id="editFullName" name="full_name" type="text" required>
+                            </label>
+                            <label>ID Eksternal
+                                <input id="editExternalId" name="external_id" type="text">
+                            </label>
+                            <label>Detail
+                                <input id="editDetail" name="detail" type="text">
+                            </label>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="action-btn cancel-btn" id="cancelEdit">Batal</button>
+                            <button type="submit" class="action-btn save-btn">Simpan</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </main>
