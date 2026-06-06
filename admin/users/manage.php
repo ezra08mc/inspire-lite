@@ -207,7 +207,8 @@ if (!empty($admin_name)) {
             font-size: 0.85rem;
             color: #374151;
         }
-        .modal-body input {
+        .modal-body input,
+        .modal-body select {
             width: 100%;
             border: 1px solid #d1d5db;
             border-radius: 12px;
@@ -378,7 +379,7 @@ const rows = getRows();
         </div>
         <nav class="sidebar-menu">
             <div class="menu-category">MAIN MENU</div>
-            <a href="dashboard.php" class="menu-item">
+            <a href="../dashboard.php" class="menu-item">
                 <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> BERANDA
             </a>
             <div class="menu-category-toggle expanded" onclick="toggleSubmenu(this)">
@@ -400,10 +401,10 @@ const rows = getRows();
                 <svg class="arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
             </div>
             <div class="submenu-items" style="display: none;">
-                <a href="announcements.php" class="sub-menu-link">
+                <a href="../announcements.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1.5 9c-.83 0-1.5-.67-1.5-1.5S17.67 8 18.5 8s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Pengumuman <span class="nav-badge"><?= $stats['total_announcements'] ?? 0 ?></span>
                 </a>
-                <a href="calendar.php" class="sub-menu-link">
+                <a href="../calendar.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg> Kalender Akademik
                 </a>
             </div>
@@ -413,13 +414,13 @@ const rows = getRows();
                 <svg class="arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
             </div>
             <div class="submenu-items" style="display: none;">
-                <a href="academic/enrollment.php" class="sub-menu-link">
+                <a href="../academic/enrollment.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Data Pendaftaran
                 </a>
-                <a href="academic/grades.php" class="sub-menu-link">
+                <a href="../academic/grades.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1 2 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg> Nilai Akademik
                 </a>
-                <a href="academic/subjects.php" class="sub-menu-link">
+                <a href="../academic/subjects.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg> Mata Kuliah
                 </a>
             </div>
@@ -429,13 +430,13 @@ const rows = getRows();
                 <svg class="arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
             </div>
             <div class="submenu-items" style="display: none;">
-                <a href="infrastructure/backup.php" class="sub-menu-link">
+                <a href="../infrastructure/backup.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-6-11l-4 4h3v4h2v-4h3l-4-4z"/></svg> Backup Data
                 </a>
-                <a href="security/logs.php" class="sub-menu-link">
+                <a href="../security/logs.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M12 1C5.92 1 1 5.92 1 12s4.92 11 11 11 11-4.92 11-11S18.08 1 12 1zm1 16h-2v2h2v-2zm0-14h-2v12h2V3z"/></svg> Log Sistem
                 </a>
-                <a href="settings/calendar.php" class="sub-menu-link">
+                <a href="../settings/calendar.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> Pengaturan
                 </a>
             </div>
@@ -593,13 +594,19 @@ const rows = getRows();
                                 <input id="editUsername" name="username" type="text" required>
                             </label>
                             <label>Peran
-                                <input id="editRole" name="role" type="text" readonly>
+                                <select id="editRole" name="role" required>
+                                    <option value="admin">Admin</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="lecturer">Dosen</option>
+                                    <option value="student">Mahasiswa</option>
+                                </select>
                             </label>
                             <label>Nama Lengkap
                                 <input id="editFullName" name="full_name" type="text" required>
                             </label>
                             <label>ID Eksternal
                                 <input id="editExternalId" name="external_id" type="text">
+                                <span style="font-size:0.8rem; color:#6b7280;">NIM / NIP / staff ID / admin ID sesuai dengan peran pengguna.</span>
                             </label>
                             <label>Detail
                                 <input id="editDetail" name="detail" type="text">
