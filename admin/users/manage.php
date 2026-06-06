@@ -216,6 +216,26 @@ if (!empty($admin_name)) {
             color: #111827;
             background: #f8fafc;
         }
+        .search-container {
+            position: relative;
+        }
+        .search-container svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: #9ca3af;
+            pointer-events: none;
+        }
+        .search-container input {
+            padding-left: 40px;
+            color: #4b5563;
+        }
+        .search-container input::placeholder {
+            color: #9ca3af;
+        }
         .modal-actions {
             display: flex;
             justify-content: flex-end;
@@ -258,8 +278,48 @@ if (!empty($admin_name)) {
                 const editRole = document.getElementById('editRole');
                 const editFullName = document.getElementById('editFullName');
                 const editExternalId = document.getElementById('editExternalId');
+                const editExternalIdType = document.getElementById('editExternalIdType');
                 const editDetail = document.getElementById('editDetail');
                 let activeRow = null;
+
+                function updateExternalIdInput(role) {
+                    if (!editExternalId || !editExternalIdType) {
+                        return;
+                    }
+
+                    if (role === 'student' || role === 'lecturer') {
+                        editExternalIdType.style.display = 'none';
+                        editExternalId.value = editExternalId.value || '';
+                        editExternalId.placeholder = role === 'student' ? 'Masukkan NIM' : 'Masukkan NIP';
+                    } else {
+                        editExternalIdType.style.display = 'block';
+                        editExternalIdType.innerHTML = '';
+                        const options = [];
+                        if (role === 'admin') {
+                            options.push({ value: 'admin_id', label: 'Admin ID' });
+                            options.push({ value: 'custom', label: 'ID Eksternal Lain' });
+                        } else if (role === 'staff') {
+                            options.push({ value: 'staff_id', label: 'Staff ID' });
+                            options.push({ value: 'custom', label: 'ID Eksternal Lain' });
+                        } else {
+                            options.push({ value: 'custom', label: 'ID Eksternal' });
+                        }
+                        options.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt.value;
+                            option.textContent = opt.label;
+                            editExternalIdType.appendChild(option);
+                        });
+                        const selectedType = editExternalIdType.value || options[0].value;
+                        if (selectedType === 'admin_id') {
+                            editExternalId.placeholder = 'Masukkan Admin ID';
+                        } else if (selectedType === 'staff_id') {
+                            editExternalId.placeholder = 'Masukkan Staff ID';
+                        } else {
+                            editExternalId.placeholder = 'Masukkan ID Eksternal';
+                        }
+                    }
+                }
 
                 function updateCount() {
                     const visibleRows = getRows().filter(row => row.style.display !== 'none');
@@ -279,6 +339,7 @@ if (!empty($admin_name)) {
                     editFullName.value = data.fullName || '';
                     editExternalId.value = data.externalId || '';
                     editDetail.value = data.detail || '';
+                    updateExternalIdInput(editRole.value);
                     if (editModal) {
                         editModal.style.display = 'flex';
                     }
@@ -295,9 +356,8 @@ if (!empty($admin_name)) {
                     searchInput.addEventListener('input', function() {
                         const query = this.value.trim().toLowerCase();
                         let visibleCount = 0;
-
-const rows = getRows();
-                    rows.forEach(row => {
+                        const rows = getRows();
+                        rows.forEach(row => {
                             const text = row.textContent.toLowerCase();
                             const visible = query === '' || text.includes(query);
                             row.style.display = visible ? 'grid' : 'none';
@@ -311,6 +371,25 @@ const rows = getRows();
                         }
                         if (counter) {
                             counter.textContent = 'Menampilkan ' + visibleCount + ' akun';
+                        }
+                    });
+                }
+                if (editRole) {
+                    editRole.addEventListener('change', function() {
+                        updateExternalIdInput(this.value);
+                    });
+                }
+                if (editExternalIdType) {
+                    editExternalIdType.addEventListener('change', function() {
+                        if (!editExternalId) {
+                            return;
+                        }
+                        if (this.value === 'admin_id') {
+                            editExternalId.placeholder = 'Masukkan Admin ID';
+                        } else if (this.value === 'staff_id') {
+                            editExternalId.placeholder = 'Masukkan Staff ID';
+                        } else {
+                            editExternalId.placeholder = 'Masukkan ID Eksternal';
                         }
                     });
                 }
@@ -546,7 +625,7 @@ const rows = getRows();
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
                     <div class="search-container" style="flex: 1; max-width: 420px;">
                         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                        <input id="userSearchInput" type="text" placeholder="Cari pengguna" style="width:100%; border:1px solid var(--border); border-radius: 0.75rem; padding: 10px 12px; font-size:0.92rem; background:#ffffff; color:#111827;">
+                        <input id="userSearchInput" type="text" placeholder="Cari pengguna" style="width:100%; border:1px solid var(--border); border-radius: 0.75rem; padding: 10px 12px 10px 40px; font-size:0.92rem; background:#ffffff; color:#4b5563;">
                     </div>
                     <div id="userListCount" style="color: #4b5563; font-size: 0.88rem;">Menampilkan <?= count($users) ?> akun</div>
                 </div>
@@ -604,8 +683,15 @@ const rows = getRows();
                             <label>Nama Lengkap
                                 <input id="editFullName" name="full_name" type="text" required>
                             </label>
+                            <label>Tipe ID Eksternal
+                                <select id="editExternalIdType" name="external_id_type" style="display:none;">
+                                    <option value="admin_id">Admin ID</option>
+                                    <option value="staff_id">Staff ID</option>
+                                    <option value="custom">ID Eksternal Lain</option>
+                                </select>
+                            </label>
                             <label>ID Eksternal
-                                <input id="editExternalId" name="external_id" type="text">
+                                <input id="editExternalId" name="external_id" type="text" placeholder="Masukkan ID Eksternal">
                                 <span style="font-size:0.8rem; color:#6b7280;">NIM / NIP / staff ID / admin ID sesuai dengan peran pengguna.</span>
                             </label>
                             <label>Detail
