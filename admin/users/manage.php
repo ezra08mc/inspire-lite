@@ -130,7 +130,7 @@ if (!empty($admin_name)) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/style.css">
     <script>
         (function() {
             const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -141,7 +141,7 @@ if (!empty($admin_name)) {
             }
         })();
     </script>
-    <script src="../assets/js/main.js" defer></script>
+    <script src="../../assets/js/main.js" defer></script>
 </head>
 <body class="dashboard-page">
     <aside class="sidebar" id="sidebarMenu">
