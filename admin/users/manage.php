@@ -70,6 +70,8 @@ $users = [];
 try {
     $query = "SELECT u.id, u.username, u.role,
         COALESCE(CONCAT(a.first_name, ' ', a.last_name), CONCAT(s.first_name, ' ', s.last_name), CONCAT(l.first_name, ' ', l.last_name), CONCAT(st.first_name, ' ', st.last_name), u.username) AS full_name,
+        COALESCE(a.first_name, s.first_name, l.first_name, st.first_name, u.username) AS first_name,
+        COALESCE(a.last_name, s.last_name, l.last_name, st.last_name, '') AS last_name,
         CASE
             WHEN u.role = 'admin' THEN a.admin_id
             WHEN u.role = 'staff' THEN s.staff_id
@@ -83,11 +85,14 @@ try {
             WHEN u.role = 'staff' THEN CONCAT('Divisi: ', s.division, ' - ', s.position)
             WHEN u.role = 'admin' THEN 'Administrator'
             ELSE ''
-        END AS detail
-        FROM users u
-        LEFT JOIN admins a ON a.user_id = u.id
-        LEFT JOIN staff s ON s.user_id = u.id
-        LEFT JOIN lecturers l ON l.user_id = u.id
+        END AS detail,
+        s.division AS staff_division,
+        l.degree AS lecturer_degree,
+        l.expertise AS lecturer_expertise,
+        st.study_program AS student_program,
+        st.cohort AS student_cohort,
+        st.nim AS student_nim,
+        l.nip AS lecturer_nip
         LEFT JOIN students st ON st.user_id = u.id
         ORDER BY
             CASE u.role
@@ -275,34 +280,62 @@ if (!empty($admin_name)) {
                 const closeEditModal = document.getElementById('closeEditModal');
                 const cancelEdit = document.getElementById('cancelEdit');
                 const editUsername = document.getElementById('editUsername');
+                const editPassword = document.getElementById('editPassword');
                 const editRole = document.getElementById('editRole');
-                const editFullName = document.getElementById('editFullName');
+                const editFirstName = document.getElementById('editFirstName');
+                const editLastName = document.getElementById('editLastName');
+                const editBirthDate = document.getElementById('editBirthDate');
                 const editExternalId = document.getElementById('editExternalId');
                 const editExternalIdType = document.getElementById('editExternalIdType');
+                const editNip = document.getElementById('editNip');
+                const editDegree = document.getElementById('editDegree');
+                const editExpertise = document.getElementById('editExpertise');
+                const editNim = document.getElementById('editNim');
+                const editStudyProgram = document.getElementById('editStudyProgram');
+                const editCohort = document.getElementById('editCohort');
+                const editDivision = document.getElementById('editDivision');
                 const editDetail = document.getElementById('editDetail');
+                const adminStaffIdGroup = document.getElementById('adminStaffIdGroup');
+                const lecturerFields = document.getElementById('lecturerFields');
+                const studentFields = document.getElementById('studentFields');
+                const staffFields = document.getElementById('staffFields');
                 let activeRow = null;
 
+                function updateRoleGroups(role) {
+                    const isAdminStaff = role === 'admin' || role === 'staff';
+                    const isLecturer = role === 'lecturer';
+                    const isStudent = role === 'student';
+
+                    if (adminStaffIdGroup) {
+                        adminStaffIdGroup.style.display = isAdminStaff ? 'block' : 'none';
+                    }
+                    if (lecturerFields) {
+                        lecturerFields.style.display = isLecturer ? 'block' : 'none';
+                    }
+                    if (studentFields) {
+                        studentFields.style.display = isStudent ? 'block' : 'none';
+                    }
+                    if (staffFields) {
+                        staffFields.style.display = role === 'staff' ? 'block' : 'none';
+                    }
+                }
+
                 function updateExternalIdInput(role) {
+                    updateRoleGroups(role);
                     if (!editExternalId || !editExternalIdType) {
                         return;
                     }
 
-                    if (role === 'student' || role === 'lecturer') {
-                        editExternalIdType.style.display = 'none';
-                        editExternalId.value = editExternalId.value || '';
-                        editExternalId.placeholder = role === 'student' ? 'Masukkan NIM' : 'Masukkan NIP';
-                    } else {
+                    if (role === 'admin' || role === 'staff') {
                         editExternalIdType.style.display = 'block';
                         editExternalIdType.innerHTML = '';
                         const options = [];
                         if (role === 'admin') {
                             options.push({ value: 'admin_id', label: 'Admin ID' });
                             options.push({ value: 'custom', label: 'ID Eksternal Lain' });
-                        } else if (role === 'staff') {
+                        } else {
                             options.push({ value: 'staff_id', label: 'Staff ID' });
                             options.push({ value: 'custom', label: 'ID Eksternal Lain' });
-                        } else {
-                            options.push({ value: 'custom', label: 'ID Eksternal' });
                         }
                         options.forEach(opt => {
                             const option = document.createElement('option');
@@ -318,6 +351,9 @@ if (!empty($admin_name)) {
                         } else {
                             editExternalId.placeholder = 'Masukkan ID Eksternal';
                         }
+                    } else {
+                        editExternalIdType.style.display = 'none';
+                        editExternalId.placeholder = role === 'student' ? 'Masukkan NIM' : 'Masukkan NIP';
                     }
                 }
 
@@ -336,7 +372,17 @@ if (!empty($admin_name)) {
                     const data = row.dataset;
                     editUsername.value = data.username || '';
                     editRole.value = data.role || '';
-                    editFullName.value = data.fullName || '';
+                    editPassword.value = '';
+                    editFirstName.value = data.firstName || '';
+                    editLastName.value = data.lastName || '';
+                    editBirthDate.value = data.birthDate || '';
+                    editNim.value = data.studentNim || '';
+                    editNip.value = data.lecturerNip || '';
+                    editDegree.value = data.lecturerDegree || '';
+                    editExpertise.value = data.lecturerExpertise || '';
+                    editStudyProgram.value = data.studentProgram || '';
+                    editCohort.value = data.studentCohort || '';
+                    editDivision.value = data.staffDivision || '';
                     editExternalId.value = data.externalId || '';
                     editDetail.value = data.detail || '';
                     updateExternalIdInput(editRole.value);
@@ -429,18 +475,37 @@ if (!empty($admin_name)) {
                     editForm.addEventListener('submit', function(event) {
                         event.preventDefault();
                         if (!activeRow) return;
+                        const fullName = (editFirstName.value.trim() + ' ' + editLastName.value.trim()).trim();
                         activeRow.dataset.username = editUsername.value;
                         activeRow.dataset.role = editRole.value;
-                        activeRow.dataset.fullName = editFullName.value;
-                        activeRow.dataset.externalId = editExternalId.value;
+                        activeRow.dataset.firstName = editFirstName.value;
+                        activeRow.dataset.lastName = editLastName.value;
+                        activeRow.dataset.birthDate = editBirthDate.value;
+                        activeRow.dataset.studentNim = editNim.value;
+                        activeRow.dataset.lecturerNip = editNip.value;
+                        activeRow.dataset.lecturerDegree = editDegree.value;
+                        activeRow.dataset.lecturerExpertise = editExpertise.value;
+                        activeRow.dataset.studentProgram = editStudyProgram.value;
+                        activeRow.dataset.studentCohort = editCohort.value;
+                        activeRow.dataset.staffDivision = editDivision.value;
                         activeRow.dataset.detail = editDetail.value;
+
+                        let externalValue = '';
+                        if (editRole.value === 'student') {
+                            externalValue = editNim.value.trim();
+                        } else if (editRole.value === 'lecturer') {
+                            externalValue = editNip.value.trim();
+                        } else {
+                            externalValue = editExternalId.value.trim();
+                        }
+                        activeRow.dataset.externalId = externalValue;
 
                         const cells = activeRow.querySelectorAll('.col-cell');
                         if (cells.length >= 4) {
                             cells[0].textContent = editUsername.value;
                             cells[1].textContent = editRole.value.toUpperCase();
-                            cells[2].textContent = editFullName.value;
-                            const external = editExternalId.value.trim() || '-';
+                            cells[2].textContent = fullName;
+                            const external = externalValue || '-';
                             const detail = editDetail.value.trim() ? ' - ' + editDetail.value.trim() : '';
                             cells[3].textContent = external + detail;
                         }
@@ -532,32 +597,6 @@ if (!empty($admin_name)) {
                 <input type="text" placeholder="Cari pengguna, username, peran...">
             </div>
             <div class="user-panel">
-                <div class="notification-wrapper">
-                    <button class="notification-bell" id="notifBellBtn">
-                        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-                        <?php if ($notification_count > 0): ?>
-                            <span class="bell-badge"><?= $notification_count ?></span>
-                        <?php endif; ?>
-                    </button>
-                    <div class="dropdown-panel-notif" id="notifDropdown">
-                        <div class="dropdown-header">Notifikasi</div>
-                        <div class="dropdown-list-container">
-                            <?php if (empty($notifications)): ?>
-                                <div class="empty-fallback-text">Tidak ada notifikasi aktif.</div>
-                            <?php else: ?>
-                                <?php foreach ($notifications as $note): ?>
-                                    <div class="dropdown-item-node <?= $note['is_read'] ? '' : 'unread' ?>">
-                                        <div class="node-icon"><?= htmlspecialchars($note['icon_symbol']) ?></div>
-                                        <div class="node-body">
-                                            <p><?= htmlspecialchars($note['text_content']) ?></p>
-                                            <span><?= htmlspecialchars($note['time_ago']) ?></span>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
                 <div class="account-interaction-wrapper pc-only-wrapper">
                     <div class="profile-clickable-zone" id="profileMenuBtn">
                         <div class="avatar-circle"><?= htmlspecialchars($initials) ?></div>
@@ -643,7 +682,7 @@ if (!empty($admin_name)) {
                         </div>
                     <?php else: ?>
                         <?php foreach ($users as $user): ?>
-                            <div class="agenda-table-row" style="grid-template-columns: 160px 220px 1fr 1fr 150px;" data-user-id="<?= htmlspecialchars($user['id']) ?>" data-username="<?= htmlspecialchars($user['username']) ?>" data-role="<?= htmlspecialchars($user['role']) ?>" data-full-name="<?= htmlspecialchars($user['full_name']) ?>" data-external-id="<?= htmlspecialchars($user['external_id']) ?>" data-detail="<?= htmlspecialchars($user['detail']) ?>">
+                            <div class="agenda-table-row" style="grid-template-columns: 160px 220px 1fr 1fr 150px;" data-user-id="<?= htmlspecialchars($user['id']) ?>" data-username="<?= htmlspecialchars($user['username']) ?>" data-role="<?= htmlspecialchars($user['role']) ?>" data-first-name="<?= htmlspecialchars($user['first_name']) ?>" data-last-name="<?= htmlspecialchars($user['last_name']) ?>" data-external-id="<?= htmlspecialchars($user['external_id']) ?>" data-detail="<?= htmlspecialchars($user['detail']) ?>" data-staff-division="<?= htmlspecialchars($user['staff_division']) ?>" data-lecturer-degree="<?= htmlspecialchars($user['lecturer_degree']) ?>" data-lecturer-expertise="<?= htmlspecialchars($user['lecturer_expertise']) ?>" data-student-program="<?= htmlspecialchars($user['student_program']) ?>" data-student-cohort="<?= htmlspecialchars($user['student_cohort']) ?>" data-student-nim="<?= htmlspecialchars($user['student_nim']) ?>" data-lecturer-nip="<?= htmlspecialchars($user['lecturer_nip']) ?>">
                                 <div class="col-cell" style="font-weight: 700; color: #111827;"><?= htmlspecialchars($user['username']) ?></div>
                                 <div class="col-cell" style="text-transform: uppercase; letter-spacing: 0.04em; color: #374151; font-size: 0.82rem;"><?= htmlspecialchars($user['role']) ?></div>
                                 <div class="col-cell" style="color: #111827;"><?= htmlspecialchars($user['full_name']) ?></div>
@@ -680,20 +719,58 @@ if (!empty($admin_name)) {
                                     <option value="student">Mahasiswa</option>
                                 </select>
                             </label>
-                            <label>Nama Lengkap
-                                <input id="editFullName" name="full_name" type="text" required>
+                            <label>Password
+                                <input id="editPassword" name="password" type="password" placeholder="Biarkan kosong jika tidak diubah">
                             </label>
-                            <label>Tipe ID Eksternal
-                                <select id="editExternalIdType" name="external_id_type" style="display:none;">
-                                    <option value="admin_id">Admin ID</option>
-                                    <option value="staff_id">Staff ID</option>
-                                    <option value="custom">ID Eksternal Lain</option>
-                                </select>
+                            <label>Nama Depan
+                                <input id="editFirstName" name="first_name" type="text" required>
                             </label>
-                            <label>ID Eksternal
-                                <input id="editExternalId" name="external_id" type="text" placeholder="Masukkan ID Eksternal">
-                                <span style="font-size:0.8rem; color:#6b7280;">NIM / NIP / staff ID / admin ID sesuai dengan peran pengguna.</span>
+                            <label>Nama Belakang
+                                <input id="editLastName" name="last_name" type="text" required>
                             </label>
+                            <label>Tanggal Lahir
+                                <input id="editBirthDate" name="birth_date" type="date">
+                            </label>
+                            <div id="adminStaffIdGroup" style="display:none;">
+                                <label>Tipe ID Eksternal
+                                    <select id="editExternalIdType" name="external_id_type">
+                                        <option value="admin_id">Admin ID</option>
+                                        <option value="staff_id">Staff ID</option>
+                                        <option value="custom">ID Eksternal Lain</option>
+                                    </select>
+                                </label>
+                                <label>ID Eksternal
+                                    <input id="editExternalId" name="external_id" type="text" placeholder="Masukkan ID Eksternal">
+                                    <span style="font-size:0.8rem; color:#6b7280;">Admin / staff dapat menggunakan ID internal atau custom sesuai kebutuhan.</span>
+                                </label>
+                            </div>
+                            <div id="lecturerFields" style="display:none;">
+                                <label>NIP
+                                    <input id="editNip" name="nip" type="text">
+                                </label>
+                                <label>Gelar
+                                    <input id="editDegree" name="degree" type="text">
+                                </label>
+                                <label>Keahlian
+                                    <input id="editExpertise" name="expertise" type="text">
+                                </label>
+                            </div>
+                            <div id="studentFields" style="display:none;">
+                                <label>NIM
+                                    <input id="editNim" name="nim" type="text">
+                                </label>
+                                <label>Program Studi
+                                    <input id="editStudyProgram" name="study_program" type="text">
+                                </label>
+                                <label>Tahun Angkatan
+                                    <input id="editCohort" name="cohort" type="text">
+                                </label>
+                            </div>
+                            <div id="staffFields" style="display:none;">
+                                <label>Divisi
+                                    <input id="editDivision" name="division" type="text">
+                                </label>
+                            </div>
                             <label>Detail
                                 <input id="editDetail" name="detail" type="text">
                             </label>

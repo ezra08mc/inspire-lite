@@ -202,32 +202,6 @@ if (!empty($admin_name)) {
             </div>
             
             <div class="user-panel">
-                <div class="notification-wrapper">
-                    <button class="notification-bell" id="notifBellBtn">
-                        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-                        <?php if ($unread_count > 0): ?>
-                            <span class="bell-badge"><?= $unread_count ?></span>
-                        <?php endif; ?>
-                    </button>
-                    <div class="dropdown-panel-notif" id="notifDropdown">
-                        <div class="dropdown-header">Notifikasi</div>
-                        <div class="dropdown-list-container">
-                            <?php if (empty($notifications)): ?>
-                                <div class="empty-fallback-text">Tidak ada notifikasi aktif.</div>
-                            <?php else: ?>
-                                <?php foreach ($notifications as $n): ?>
-                                    <div class="dropdown-item-node <?= $n['is_read'] ? '' : 'unread' ?>">
-                                        <div class="node-icon"><?= htmlspecialchars($n['icon_symbol']) ?></div>
-                                        <div class="node-body">
-                                            <p><?= htmlspecialchars($n['text_content']) ?></p>
-                                            <span><?= htmlspecialchars($n['time_ago']) ?></span>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
                 
                 <div class="account-interaction-wrapper pc-only-wrapper">
                     <div class="profile-clickable-zone" id="profileMenuBtn">
