@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once "../config/db.php";
+require_once "../../config/db.php";
 
 if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
-    header("Location: ../login.php");
+    header("Location: ../../login.php");
     exit();
 }
 
@@ -78,9 +78,9 @@ try {
             ELSE ''
         END AS external_id,
         CASE
-            WHEN u.role = 'student' THEN CONCAT('Prodi: ', st.study_program, ' � ', st.cohort)
-            WHEN u.role = 'lecturer' THEN CONCAT('Gelar: ', l.degree, ' � ', l.expertise)
-            WHEN u.role = 'staff' THEN CONCAT('Divisi: ', s.division, ' � ', s.position)
+            WHEN u.role = 'student' THEN CONCAT('Prodi: ', st.study_program, ' - ', st.cohort)
+            WHEN u.role = 'lecturer' THEN CONCAT('Gelar: ', l.degree, ' - ', l.expertise)
+            WHEN u.role = 'staff' THEN CONCAT('Divisi: ', s.division, ' - ', s.position)
             WHEN u.role = 'admin' THEN 'Administrator'
             ELSE ''
         END AS detail
@@ -267,14 +267,14 @@ if (!empty($admin_name)) {
                                 <p class="head-sub"><?= htmlspecialchars($admin_id) ?></p>
                             </div>
                         </div>
-                        <a href="settings/profile.php" class="account-drop-link">
+                        <a href="../settings/profile.php" class="account-drop-link">
                             <svg viewBox="0 0 24 24" class="drop-link-icon"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Profil Saya
                         </a>
-                        <a href="settings/preferences.php" class="account-drop-link">
+                        <a href="../settings/preferences.php" class="account-drop-link">
                             <svg viewBox="0 0 24 24" class="drop-link-icon"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> Preferensi
                         </a>
                         <div class="divider"></div>
-                        <a href="../logout.php" class="account-drop-link logout">
+                        <a href="../../logout.php" class="account-drop-link logout">
                             <svg viewBox="0 0 24 24" class="drop-link-icon"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg> Keluar
                         </a>
                     </div>
@@ -339,7 +339,7 @@ if (!empty($admin_name)) {
                                 <div class="col-cell" style="font-weight: 700; color: #111827;"><?= htmlspecialchars($user['username']) ?></div>
                                 <div class="col-cell" style="text-transform: uppercase; letter-spacing: 0.04em; color: #374151; font-size: 0.82rem;"><?= htmlspecialchars($user['role']) ?></div>
                                 <div class="col-cell" style="color: #111827;"><?= htmlspecialchars($user['full_name']) ?></div>
-                                <div class="col-cell" style="color: #4b5563; font-size: 0.92rem;"><?= htmlspecialchars($user['external_id'] ?: '-') ?><?= $user['detail'] ? ' � ' . htmlspecialchars($user['detail']) : '' ?></div>
+                                <div class="col-cell" style="color: #4b5563; font-size: 0.92rem;"><?= htmlspecialchars($user['external_id'] ?: '-') ?><?= $user['detail'] ? ' - ' . htmlspecialchars($user['detail']) : '' ?></div>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -355,14 +355,14 @@ if (!empty($admin_name)) {
                     <p class="head-sub"><?= htmlspecialchars($admin_id) ?></p>
                 </div>
             </div>
-            <a href="settings/profile.php" class="account-drop-link">
+            <a href="../settings/profile.php" class="account-drop-link">
                 <svg viewBox="0 0 24 24" class="drop-link-icon"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Profil Saya
             </a>
-            <a href="settings/preferences.php" class="account-drop-link">
+            <a href="../settings/preferences.php" class="account-drop-link">
                 <svg viewBox="0 0 24 24" class="drop-link-icon"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> Preferensi
             </a>
             <div class="divider"></div>
-            <a href="../logout.php" class="account-drop-link logout">
+            <a href="../../logout.php" class="account-drop-link logout">
                 <svg viewBox="0 0 24 24" class="drop-link-icon"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg> Keluar
             </a>
         </div>
