@@ -60,17 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
 
-            // Check if username already exists
             $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username");
             $stmt->execute([':username' => $username]);
             if ($stmt->fetch()) {
                 throw new Exception('Username sudah terdaftar.');
             }
 
-            // Hash password
             $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-            // Insert into users table
             $stmt = $pdo->prepare("INSERT INTO users (username, password, role, created_at) VALUES (:username, :password, :role, NOW())");
             $stmt->execute([
                 ':username' => $username,
@@ -80,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $new_user_id = $pdo->lastInsertId();
 
-            // Insert into role-specific tables
             if ($role === 'admin') {
                 $admin_id_new = 'ADM-' . str_pad($new_user_id, 2, '0', STR_PAD_LEFT);
                 $stmt = $pdo->prepare("INSERT INTO admins (admin_id, user_id, first_name, last_name) VALUES (:admin_id, :user_id, :first_name, :last_name)");
@@ -129,13 +125,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $study_program = $_POST['study_program'] ?? 'Teknik Informatika';
                 $cohort = $_POST['cohort'] ?? '2026';
+                $birth_date = $_POST['birth_date'] ?? '2006-01-01';
 
-                $stmt = $pdo->prepare("INSERT INTO students (nim, user_id, first_name, last_name, study_program, cohort) VALUES (:nim, :user_id, :first_name, :last_name, :study_program, :cohort)");
+                $stmt = $pdo->prepare("INSERT INTO students (nim, user_id, first_name, last_name, birth_date, study_program, cohort) VALUES (:nim, :user_id, :first_name, :last_name, :birth_date, :study_program, :cohort)");
                 $stmt->execute([
                     ':nim' => $nim_new,
                     ':user_id' => $new_user_id,
                     ':first_name' => $first_name,
                     ':last_name' => $last_name,
+                    ':birth_date' => $birth_date,
                     ':study_program' => $study_program,
                     ':cohort' => $cohort
                 ]);
@@ -144,8 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
             $message = 'Akun berhasil dibuat. Username: ' . htmlspecialchars($username);
             $message_type = 'success';
-
-            // Clear form
             $_POST = [];
         } catch (Exception $e) {
             $pdo->rollBack();
@@ -347,7 +343,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </select>
                         </div>
 
-                        <!-- Staff Fields -->
                         <div id="staff-fields" class="role-fields <?= ($_POST['role'] ?? '') === 'staff' ? 'active' : '' ?>">
                             <h4 style="margin-top: 0; font-size: 0.95rem; color: #374151;">Data Staf</h4>
                             <div class="form-row">
@@ -366,7 +361,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
-                        <!-- Lecturer Fields -->
                         <div id="lecturer-fields" class="role-fields <?= ($_POST['role'] ?? '') === 'lecturer' ? 'active' : '' ?>">
                             <h4 style="margin-top: 0; font-size: 0.95rem; color: #374151;">Data Dosen</h4>
                             <div class="form-row">
@@ -385,7 +379,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
-                        <!-- Student Fields -->
                         <div id="student-fields" class="role-fields <?= ($_POST['role'] ?? '') === 'student' ? 'active' : '' ?>">
                             <h4 style="margin-top: 0; font-size: 0.95rem; color: #374151;">Data Mahasiswa</h4>
                             <div class="form-row">
@@ -394,13 +387,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <input type="text" id="student_nim" name="nim" value="<?= htmlspecialchars($_POST['nim'] ?? '') ?>">
                                 </div>
                                 <div class="form-group">
+                                    <label for="student_birth_date">Tanggal Lahir *</label>
+                                    <input type="date" id="student_birth_date" name="birth_date" value="<?= htmlspecialchars($_POST['birth_date'] ?? '2006-01-01') ?>">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
                                     <label for="student_program">Program Studi</label>
                                     <input type="text" id="student_program" name="study_program" value="<?= htmlspecialchars($_POST['study_program'] ?? 'Teknik Informatika') ?>">
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="student_cohort">Tahun Angkatan</label>
-                                <input type="text" id="student_cohort" name="cohort" value="<?= htmlspecialchars($_POST['cohort'] ?? '2026') ?>">
+                                <div class="form-group">
+                                    <label for="student_cohort">Tahun Angkatan</label>
+                                    <input type="text" id="student_cohort" name="cohort" value="<?= htmlspecialchars($_POST['cohort'] ?? '2026') ?>">
+                                </div>
                             </div>
                         </div>
 
@@ -426,7 +425,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p style="margin: 0 0 12px;">Pengajar. Memerlukan gelar, keahlian, dan tanggal lahir.</p>
 
                         <h4 style="margin: 16px 0 8px; color: #111827;">Mahasiswa</h4>
-                        <p style="margin: 0 0 12px;">Peserta didik. Memerlukan NIM, program studi, dan tahun angkatan.</p>
+                        <p style="margin: 0 0 12px;">Peserta didik. Memerlukan NIM, tanggal lahir, program studi, dan tahun angkatan.</p>
 
                         <div style="background: #eff6ff; border-left: 4px solid #007bec; padding: 12px; margin-top: 16px; border-radius: 4px;">
                             <strong style="color: #007bec;">💡 Tips:</strong>
