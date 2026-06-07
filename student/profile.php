@@ -39,7 +39,6 @@ try {
     error_log($e->getMessage());
 }
 
-// Helper for initials and names
 $student_name = $student_data ? ($student_data["first_name"] . " " . $student_data["last_name"]) : $nim;
 $initials = "";
 if ($student_data) {
@@ -50,7 +49,7 @@ if ($student_data) {
     $initials = strtoupper(substr($nim, 0, 2));
 }
 
-$unread_count = 0; // Placeholder
+$unread_count = 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -104,14 +103,15 @@ $unread_count = 0; // Placeholder
     </aside>
 
     <div class="main-content">
+        <!-- Navbar: title left, user info right -->
         <header class="navbar">
             <button class="menu-toggle-hamburger" id="hamburgerBtn">
                 <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
             </button>
-            <div class="page-title-header">
+            <div class="pf-navbar-title">
                 <h1>Profil Mahasiswa</h1>
             </div>
-            <div class="user-panel">
+            <div class="user-panel" style="margin-left:auto;">
                 <div class="account-interaction-wrapper">
                     <div class="profile-clickable-zone">
                         <div class="avatar-circle"><?= htmlspecialchars($initials) ?></div>
@@ -127,308 +127,292 @@ $unread_count = 0; // Placeholder
         <main class="content-body">
             <?php if (!empty($data_errors)): ?>
                 <?php foreach ($data_errors as $error): ?>
-                    <div class="error-banner" style="margin-bottom: 20px;">⚠ <?= htmlspecialchars($error) ?></div>
+                    <div class="error-banner" style="margin-bottom:20px;">⚠ <?= htmlspecialchars($error) ?></div>
                 <?php endforeach; ?>
             <?php endif; ?>
 
             <!-- Hero Card -->
-            <div class="profile-hero-card content-card">
-                <div class="profile-hero-inner">
-                    <div class="profile-avatar-xl"><?= htmlspecialchars($initials) ?></div>
-                    <div class="profile-hero-info">
-                        <div class="profile-hero-name"><?= htmlspecialchars($student_name) ?></div>
-                        <div class="profile-hero-meta">
-                            <span class="profile-meta-chip">
-                                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            <div class="content-card pf-hero-card">
+                <div class="pf-hero-inner">
+                    <div class="pf-avatar-xl"><?= htmlspecialchars($initials) ?></div>
+                    <div class="pf-hero-info">
+                        <div class="pf-hero-name"><?= htmlspecialchars($student_name) ?></div>
+                        <div class="pf-hero-meta">
+                            <span class="pf-chip">
+                                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
                                 <?= htmlspecialchars($nim) ?>
                             </span>
-                            <span class="profile-meta-chip">
-                                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                            <span class="pf-chip">
+                                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
                                 <?= htmlspecialchars($student_data["study_program"] ?? "-") ?>
                             </span>
-                            <span class="badge-active-hero">
-                                <span class="badge-dot"></span>
-                                Aktif
+                            <span class="pf-badge-active">
+                                <span class="pf-badge-dot"></span>Aktif
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Two-column layout -->
-            <div class="profile-two-col">
+            <!-- Two-column grid -->
+            <div class="pf-two-col">
 
-                <!-- Left: Biodata -->
-                <div class="content-card profile-biodata-card">
-                    <div class="card-section-header">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg>
-                        <h3>Biodata Diri</h3>
+                <!-- Biodata -->
+                <div class="content-card">
+                    <div class="pf-section-header">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M9 11.75A1.25 1.25 0 1 0 9 14.25 1.25 1.25 0 0 0 9 11.75zM20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg>
+                        <span>Biodata Diri</span>
                     </div>
-
-                    <div class="biodata-rows">
-                        <div class="biodata-row">
-                            <span class="biodata-label">Nama Lengkap</span>
-                            <span class="biodata-value"><?= htmlspecialchars($student_name) ?></span>
+                    <div class="pf-biodata">
+                        <div class="pf-row">
+                            <span class="pf-row-label">Nama Lengkap</span>
+                            <span class="pf-row-value"><?= htmlspecialchars($student_name) ?></span>
                         </div>
-                        <div class="biodata-row">
-                            <span class="biodata-label">NIM</span>
-                            <span class="biodata-value"><?= htmlspecialchars($nim) ?></span>
+                        <div class="pf-row">
+                            <span class="pf-row-label">NIM</span>
+                            <span class="pf-row-value"><?= htmlspecialchars($nim) ?></span>
                         </div>
-                        <div class="biodata-row">
-                            <span class="biodata-label">Program Studi</span>
-                            <span class="biodata-value"><?= htmlspecialchars($student_data["study_program"] ?? "-") ?></span>
+                        <div class="pf-row">
+                            <span class="pf-row-label">Program Studi</span>
+                            <span class="pf-row-value"><?= htmlspecialchars($student_data["study_program"] ?? "-") ?></span>
                         </div>
-                        <div class="biodata-row">
-                            <span class="biodata-label">Angkatan</span>
-                            <span class="biodata-value"><?= htmlspecialchars($student_data["cohort"] ?? "-") ?></span>
+                        <div class="pf-row">
+                            <span class="pf-row-label">Angkatan</span>
+                            <span class="pf-row-value"><?= htmlspecialchars($student_data["cohort"] ?? "-") ?></span>
                         </div>
-                        <div class="biodata-row">
-                            <span class="biodata-label">Tanggal Lahir</span>
-                            <span class="biodata-value"><?= htmlspecialchars($student_data["birth_date"] ?? "-") ?></span>
+                        <div class="pf-row">
+                            <span class="pf-row-label">Tanggal Lahir</span>
+                            <span class="pf-row-value"><?= htmlspecialchars($student_data["birth_date"] ?? "-") ?></span>
                         </div>
-                        <div class="biodata-row last">
-                            <span class="biodata-label">Status</span>
-                            <span class="biodata-value">
-                                <span class="badge-active-inline">Aktif</span>
+                        <div class="pf-row pf-row--last">
+                            <span class="pf-row-label">Status</span>
+                            <span class="pf-row-value">
+                                <span class="pf-status-badge">Aktif</span>
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Academic Summary -->
-                <div class="content-card profile-stats-card">
-                    <div class="card-section-header">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
-                        <h3>Ringkasan Akademik</h3>
+                <!-- Academic Stats -->
+                <div class="content-card">
+                    <div class="pf-section-header">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                        <span>Ringkasan Akademik</span>
                     </div>
-
-                    <div class="stats-grid">
-                        <div class="stat-tile stat-tile--primary">
-                            <div class="stat-tile-value"><?= htmlspecialchars($stats["ipk_kumulatif"] ?? "0.00") ?></div>
-                            <div class="stat-tile-label">IPK Kumulatif</div>
+                    <div class="pf-stats-grid">
+                        <div class="pf-stat-tile pf-stat-tile--accent">
+                            <div class="pf-stat-value"><?= htmlspecialchars($stats["ipk_kumulatif"] ?? "0.00") ?></div>
+                            <div class="pf-stat-label">IPK Kumulatif</div>
                         </div>
-                        <div class="stat-tile">
-                            <div class="stat-tile-value"><?= htmlspecialchars($stats["sks_ditempuh"] ?? "0") ?></div>
-                            <div class="stat-tile-label">SKS Ditempuh</div>
+                        <div class="pf-stat-tile">
+                            <div class="pf-stat-value"><?= htmlspecialchars($stats["sks_ditempuh"] ?? "0") ?></div>
+                            <div class="pf-stat-label">SKS Ditempuh</div>
                         </div>
-                        <div class="stat-tile">
-                            <div class="stat-tile-value"><?= htmlspecialchars($stats["ip_semester"] ?? "0.00") ?></div>
-                            <div class="stat-tile-label">IP Semester</div>
+                        <div class="pf-stat-tile">
+                            <div class="pf-stat-value"><?= htmlspecialchars($stats["ip_semester"] ?? "0.00") ?></div>
+                            <div class="pf-stat-label">IP Semester</div>
                         </div>
-                        <div class="stat-tile">
-                            <div class="stat-tile-value"><?= htmlspecialchars($stats["sks_semester"] ?? "0") ?></div>
-                            <div class="stat-tile-label">SKS Semester</div>
+                        <div class="pf-stat-tile">
+                            <div class="pf-stat-value"><?= htmlspecialchars($stats["sks_semester"] ?? "0") ?></div>
+                            <div class="pf-stat-label">SKS Semester</div>
                         </div>
                     </div>
                 </div>
 
-            </div><!-- /.profile-two-col -->
+            </div>
         </main>
     </div>
 
     <style>
-        /* ── Hero Card ─────────────────────────────────────── */
-        .profile-hero-card {
-            margin-bottom: 20px;
-            padding: 28px 32px;
+        /* ── Navbar title ──────────────────────────────────── */
+        .pf-navbar-title {
+            flex: 1;
         }
-        .profile-hero-inner {
+        .pf-navbar-title h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+        }
+        .user-name { color: #ffffff; font-size: 0.85rem; font-weight: 700; }
+        .user-role { color: rgba(255,255,255,0.7); font-size: 0.72rem; }
+
+        /* ── Hero card ─────────────────────────────────────── */
+        .pf-hero-card {
+            margin-bottom: 20px;
+            padding: 24px 28px;
+        }
+        .pf-hero-inner {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 20px;
         }
-        .profile-avatar-xl {
-            width: 72px;
-            height: 72px;
-            min-width: 72px;
+        .pf-avatar-xl {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
             background: var(--primary);
             color: #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 800;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
         }
-        .profile-hero-info {
+        .pf-hero-info {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
-        .profile-hero-name {
-            font-size: 1.35rem;
+        .pf-hero-name {
+            font-size: 1.25rem;
             font-weight: 800;
-            color: #fff;
+            color: var(--charcoal);
             letter-spacing: -0.01em;
-            line-height: 1.2;
         }
-        .profile-hero-meta {
+        .pf-hero-meta {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 7px;
         }
-        .profile-meta-chip {
+        .pf-chip {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.12);
-            color: rgba(255,255,255,0.75);
-            font-size: 0.75rem;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 0.73rem;
             font-weight: 600;
             padding: 4px 10px;
             border-radius: 6px;
-            letter-spacing: 0.01em;
         }
-        .badge-active-hero {
+        .pf-badge-active {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(16,185,129,0.15);
-            border: 1px solid rgba(16,185,129,0.35);
-            color: #34d399;
-            font-size: 0.75rem;
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            color: #059669;
+            font-size: 0.73rem;
             font-weight: 700;
             padding: 4px 10px;
             border-radius: 6px;
-            letter-spacing: 0.03em;
         }
-        .badge-dot {
+        .pf-badge-dot {
             width: 6px;
             height: 6px;
-            background: #34d399;
+            background: #10b981;
             border-radius: 50%;
             display: inline-block;
         }
 
-        /* ── Two-column layout ─────────────────────────────── */
-        .profile-two-col {
+        /* ── Two-column ────────────────────────────────────── */
+        .pf-two-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        /* ── Section header inside cards ───────────────────── */
-        .card-section-header {
+        /* ── Section header ────────────────────────────────── */
+        .pf-section-header {
             display: flex;
             align-items: center;
-            gap: 9px;
-            padding-bottom: 16px;
+            gap: 8px;
+            padding-bottom: 14px;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 20px;
+            margin-bottom: 4px;
         }
-        .card-section-header svg {
-            fill: var(--primary);
-            opacity: 0.9;
-            flex-shrink: 0;
-        }
-        .card-section-header h3 {
-            font-size: 0.85rem;
+        .pf-section-header svg { fill: var(--primary); flex-shrink: 0; }
+        .pf-section-header span {
+            font-size: 0.8rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: rgba(255,255,255,0.85);
+            letter-spacing: 0.07em;
+            color: var(--charcoal);
         }
 
         /* ── Biodata rows ──────────────────────────────────── */
-        .biodata-rows {
-            display: flex;
-            flex-direction: column;
-        }
-        .biodata-row {
+        .pf-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 13px 0;
+            padding: 12px 0;
             border-bottom: 1px solid var(--border);
-            gap: 12px;
+            gap: 16px;
         }
-        .biodata-row.last {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        .biodata-label {
+        .pf-row--last { border-bottom: none; }
+        .pf-row-label {
             font-size: 0.78rem;
             font-weight: 600;
-            color: rgba(255,255,255,0.45);
+            color: #9ca3af;
             white-space: nowrap;
             flex-shrink: 0;
         }
-        .biodata-value {
-            font-size: 0.88rem;
+        .pf-row-value {
+            font-size: 0.85rem;
             font-weight: 600;
-            color: rgba(255,255,255,0.9);
+            color: var(--charcoal);
             text-align: right;
         }
-        .badge-active-inline {
+        .pf-status-badge {
             display: inline-block;
-            background: rgba(16,185,129,0.15);
-            border: 1px solid rgba(16,185,129,0.35);
-            color: #34d399;
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            color: #059669;
             font-size: 0.72rem;
             font-weight: 700;
             padding: 3px 9px;
             border-radius: 5px;
-            letter-spacing: 0.04em;
         }
 
         /* ── Stats grid ────────────────────────────────────── */
-        .stats-grid {
+        .pf-stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
+            margin-top: 4px;
         }
-        .stat-tile {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
+        .pf-stat-tile {
+            background: #f9fafb;
+            border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 18px 16px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            transition: background 0.15s;
+            gap: 5px;
         }
-        .stat-tile:hover {
-            background: rgba(255,255,255,0.08);
+        .pf-stat-tile--accent {
+            background: #fff0f0;
+            border-color: #fecaca;
         }
-        .stat-tile--primary {
-            background: rgba(255,59,48,0.12);
-            border-color: rgba(255,59,48,0.25);
-        }
-        .stat-tile--primary:hover {
-            background: rgba(255,59,48,0.18);
-        }
-        .stat-tile-value {
+        .pf-stat-value {
             font-size: 1.6rem;
             font-weight: 800;
-            color: #fff;
+            color: var(--charcoal);
             letter-spacing: -0.02em;
             line-height: 1;
         }
-        .stat-tile--primary .stat-tile-value {
-            color: var(--primary);
-        }
-        .stat-tile-label {
-            font-size: 0.7rem;
+        .pf-stat-tile--accent .pf-stat-value { color: var(--primary); }
+        .pf-stat-label {
+            font-size: 0.68rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.07em;
-            color: rgba(255,255,255,0.45);
+            color: #9ca3af;
         }
 
         /* ── Responsive ────────────────────────────────────── */
         @media (max-width: 900px) {
-            .profile-two-col {
-                grid-template-columns: 1fr;
-            }
+            .pf-two-col { grid-template-columns: 1fr; }
         }
         @media (max-width: 560px) {
-            .profile-hero-card { padding: 20px; }
-            .profile-avatar-xl { width: 56px; height: 56px; min-width: 56px; font-size: 1.2rem; }
-            .profile-hero-name { font-size: 1.1rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .pf-hero-card { padding: 18px; }
+            .pf-avatar-xl { width: 52px; height: 52px; min-width: 52px; font-size: 1.1rem; }
+            .pf-hero-name { font-size: 1rem; }
         }
     </style>
 </body>
