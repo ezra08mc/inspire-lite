@@ -1,82 +1,30 @@
 <?php
-session_start();
-require_once "../config/db.php";
+// Dashboard inner content only. _layout.php outputs full HTML shell.
 
-if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "lecturer") {
-    header("Location: ../login.php");
-    exit();
-}
+// Dashboard-only queries (layout already loads announcements + notifications + identity)
+$userId = (int)($_SESSION['user_id'] ?? 0);
 
-$user_id = $_SESSION["user_id"];
-$lecturer_name = "";
-$nip = $_SESSION["username"];
-$expertise = "";
-$cohort = date('Y');
-
-try {
-    $stmt = $pdo->prepare("SELECT nip, first_name, last_name, degree, expertise FROM lecturers WHERE user_id = :user_id LIMIT 1");
-    $stmt->execute([':user_id' => $user_id]);
-    $student_data = $stmt->fetch();
-    if ($student_data) {
-        $lecturer_name = $student_data['first_name'] . ' ' . $student_data['last_name'];
-        $nip = $student_data['nim'];
-        $expertise = $student_data['study_program'];
-        $cohort = $student_data['cohort'];
-    }
-} catch (PDOException $e) {}
-
-$academic_year = $cohort . "/" . ($cohort + 1);
-$current_month = "Mei 2026";
-$current_day = 23;
-
-$stats = ['sks_ditempuh' => '0/0', 'ipk_kumulatif' => '0.00', 'ip_semester' => '0.00', 'sks_semester' => '0'];
-try {
-    $stmt = $pdo->prepare("SELECT sks_ditempuh, ipk_kumulatif, ip_semester, sks_semester FROM student_academic_stats WHERE user_id = :user_id LIMIT 1");
-    $stmt->execute([':user_id' => $user_id]);
-    $db_stats = $stmt->fetch();
-    if ($db_stats) { $stats = $db_stats; }
-} catch (PDOException $e) {}
-
-$announcements = [];
-try {
-    $stmt = $pdo->query("SELECT type, badge_class, date_text, title, content, author FROM announcements ORDER BY id DESC");
-    $announcements = $stmt->fetchAll();
-} catch (PDOException $e) {}
+$current_month = date('F Y');
 
 $tasks = [];
 try {
     $stmt = $pdo->prepare("SELECT id, name, deadline_text, is_alert, is_completed FROM active_tasks WHERE user_id = :user_id ORDER BY id ASC");
-    $stmt->execute([':user_id' => $user_id]);
+    $stmt->execute([':user_id' => $userId]);
     $tasks = $stmt->fetchAll();
 } catch (PDOException $e) {}
 
+// Use jadwal as agenda for lecturer dashboard
 $agenda = [];
 try {
-    $stmt = $pdo->prepare("SELECT date_badge, title, time_range, location, dot_color FROM student_agenda WHERE user_id = :user_id ORDER BY id ASC");
-    $stmt->execute([':user_id' => $user_id]);
+    $stmt = $pdo->query("SELECT tanggal, nama_mata_kuliah AS title, CONCAT(jam_mulai, '–', jam_selesai) AS time_range, ruangan AS location, CASE WHEN DAY(tanggal)=DAY(CURDATE()) THEN 'red' WHEN tanggal >= CURDATE() THEN 'blue' ELSE 'coral' END AS dot_color FROM jadwal ORDER BY tanggal ASC LIMIT 7");
     $agenda = $stmt->fetchAll();
 } catch (PDOException $e) {}
 
-$initials = "";
-if (!empty($lecturer_name)) {
-    $name_array = explode(' ', $lecturer_name);
-    $initials = strtoupper(substr($name_array[0], 0, 1) . substr($name_array[1] ?? '', 0, 1));
-} else {
-    $initials = "BS";
-}
-
-$notifications = [];
-try {
-    $stmt = $pdo->prepare("SELECT text_content, time_ago, is_read, icon_symbol FROM student_notifications WHERE user_id = :user_id ORDER BY id DESC LIMIT 5");
-    $stmt->execute([':user_id' => $user_id]);
-    $notifications = $stmt->fetchAll();
-} catch (PDOException $e) {}
-$unread_count = count(array_filter($notifications, function($n) { return !$n['is_read']; }));
+// Stats placeholders for lecturer dashboard
+$stats = ['sks_ditempuh' => '—', 'ipk_kumulatif' => '—', 'ip_semester' => '—', 'sks_semester' => '—'];
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>INSPIRE LITE - Portal Dosen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
