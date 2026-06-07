@@ -638,6 +638,66 @@ body.sidebar-collapsed .main-content {
   flex-shrink: 0;
 }
 
+/* ── Navbar title + user text (shared across student pages) ── */
+.page-title-header {
+  flex: 1;
+}
+
+.page-title-header h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.user-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.user-info-text .user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.user-info-text .user-role {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* index.php uses .user-meta / .user-name-text / .user-id-text */
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.user-name-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.user-id-text {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Hide on mobile, show on desktop */
+.pc-only {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .pc-only {
+    display: flex;
+  }
+}
+
 .dropdown-panel-notif {
   position: absolute;
   top: 100%;
