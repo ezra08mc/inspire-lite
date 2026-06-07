@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 require_once "../config/db.php";
@@ -241,7 +240,7 @@ $unread_count = 0;
 
         <nav class="sidebar-menu">
             <div class="menu-category">MAIN MENU</div>
-            <a href="dashboard.php" class="menu-item active">
+            <a href="index.php" class="menu-item active">
                 <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> BERANDA
             </a>
             <a href="profile.php" class="menu-item">

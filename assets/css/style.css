@@ -257,6 +257,7 @@ body.dashboard-page {
   --primary-hover: #b81d22;
   --border: #e5e7eb;
   --muted: #6B7280;
+  --muted-foreground: #6B7280;
   --accent: #fff0f0;
   --accent-foreground: #D2232A;
   --radius: 0.75rem;

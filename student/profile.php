@@ -62,6 +62,13 @@ $unread_count = 0;
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="../assets/js/main.js" defer></script>
+    <script>
+        (function() {
+            var w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            if (w <= 768) { document.documentElement.classList.add('preload-collapsed'); }
+            else { document.documentElement.classList.add('preload-expanded'); }
+        })();
+    </script>
 </head>
 <body class="dashboard-page">
 
@@ -429,5 +436,18 @@ $unread_count = 0;
             .pf-hero-name { font-size: 1rem; }
         }
     </style>
+    <script>
+        // Auto-expand the submenu containing the active link
+        document.querySelectorAll('.submenu-items').forEach(function(submenu) {
+            if (submenu.querySelector('.sub-menu-link.active')) {
+                submenu.style.display = '';
+                var toggle = submenu.previousElementSibling;
+                if (toggle && toggle.classList.contains('menu-category-toggle')) {
+                    var arrow = toggle.querySelector('.arrow');
+                    if (arrow) arrow.style.transform = 'rotate(90deg)';
+                }
+            }
+        });
+    </script>
 </body>
 </html>
