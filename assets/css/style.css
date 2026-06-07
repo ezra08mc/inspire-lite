@@ -995,11 +995,14 @@ body.sidebar-collapsed .main-content {
   gap: 8px;
   cursor: pointer;
   background: #fbfbfc;
+  text-decoration: none;
+  transition: border-color 0.15s, background-color 0.15s, transform 0.15s;
 }
 
 .action-node:hover {
   border-color: var(--primary);
   background-color: var(--accent);
+  transform: translateY(-2px);
 }
 
 .action-node-icon {
@@ -1075,6 +1078,16 @@ body.sidebar-collapsed .main-content {
   border: none;
   color: white;
   cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+}
+
+.trigger-btn:hover {
+  opacity: 0.88;
+  color: white;
 }
 
 .btn-blue {
