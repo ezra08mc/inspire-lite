@@ -1,4 +1,4 @@
-/*M!999999\- enable the sandbox mode */ 
+/*M!999999\- enable the sandbox mode */
 -- MariaDB dump 10.19  Distrib 10.11.16-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: inspire_lite_db
@@ -22,11 +22,7 @@
 
 DROP TABLE IF EXISTS `academic_grades`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `academic_grades` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `nim` varchar(15) NOT NULL,
-  `course_code` varchar(10) NOT NULL,
+
   `grade_point` decimal(3,2) NOT NULL,
   `grade_letter` enum('A','B','C','D','E') NOT NULL,
   PRIMARY KEY (`id`),
@@ -388,3 +384,53 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-06-01 23:39:55
+
+-- ------------------------------------------------------
+-- Appended by Gemini CLI on 2026-06-05
+-- ------------------------------------------------------
+
+--
+-- Table structure for table `student_notifications`
+--
+
+CREATE TABLE IF NOT EXISTS `student_notifications` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(255) NOT NULL,
+    `content` TEXT NOT NULL,
+    `category` VARCHAR(50) DEFAULT 'Umum',
+    `sender` VARCHAR(100) NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE `student_notifications` MODIFY COLUMN `category` ENUM(
+    'Umum', 'Penting', 'Rektorat', 'Dekanat', 'Jurusan',
+    'Dosen Pengampu', 'Dosen Pembimbing',
+    'Akademik', 'Keuangan', 'UPT TIK', 'Perpustakaan',
+    'Panitia KKT', 'Panitia Ujian', 'Panitia Wisuda'
+) DEFAULT 'Umum';
+
+--
+-- Table structure for table `jadwal`
+--
+
+CREATE TABLE IF NOT EXISTS `jadwal` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `kode_mk` VARCHAR(20) NOT NULL,
+    `nama_mata_kuliah` VARCHAR(150) NOT NULL,
+    `sks` INT NOT NULL,
+    `kelas` VARCHAR(10) NOT NULL,
+    `dosen_pengampu` VARCHAR(150) NOT NULL,
+    `hari` VARCHAR(20) NOT NULL,
+    `tanggal` DATE NOT NULL,
+    `jam_mulai` TIME NOT NULL,
+    `jam_selesai` TIME NOT NULL,
+    `ruangan` VARCHAR(50) NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `jadwal`
+--
+
+INSERT INTO `jadwal` (`kode_mk`, `nama_mata_kuliah`, `sks`, `kelas`, `dosen_pengampu`, `hari`, `tanggal`, `jam_mulai`, `jam_selesai`, `ruangan`)
+VALUES ('TIK2032', 'PEMROGRAMAN WEB', 3, 'E', '(Nama Dosen)', 'Senin', '2026-06-08', '13:00:00', '15:30:00', 'UPT TIK');
