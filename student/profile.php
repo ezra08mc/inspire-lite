@@ -128,7 +128,7 @@ $unread_count = 0;
             <?php if (!empty($data_errors)): ?>
                 <?php foreach ($data_errors as $error): ?>
                     <div class="error-banner" style="margin-bottom:20px;">⚠ <?= htmlspecialchars($error) ?></div>
-                <?php endforeach; ?>
+                <?php endforeach; ?>        
             <?php endif; ?>
 
             <!-- Hero Card -->

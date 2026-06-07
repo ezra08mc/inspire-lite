@@ -41,18 +41,22 @@ try {
 }
 
 $notifications = [];
-try {
-    $stmt = $pdo->prepare("SELECT text_content, time_ago, is_read, icon_symbol FROM student_notifications WHERE user_id = :user_id ORDER BY id DESC LIMIT 5");
-    $stmt->execute([':user_id' => $user_id]);
-    $notifications = $stmt->fetchAll();
-} catch (PDOException $e) {
-}
 $unread_count = 0;
 try {
-    $unread_count = count(array_filter($notifications, function($n) { return empty($n['is_read']); }));
-} catch (Throwable $e) {
+    // Match database.sql structure for student_notifications:
+    // id, title, content, category, sender, created_at (no user_id/text_content/time_ago/is_read/icon_symbol)
+    // We'll still show latest announcements for the lecturer screen.
+    $stmt = $pdo->prepare("SELECT id, title, content, category, sender, created_at FROM student_notifications ORDER BY id DESC LIMIT 5");
+    $stmt->execute();
+    $notifications = $stmt->fetchAll();
+
+    // No is_read field in schema; keep badge hidden unless you later add read-tracking.
+    $unread_count = 0;
+} catch (PDOException $e) {
+    $notifications = [];
     $unread_count = 0;
 }
+
 
 $activePage = basename($_SERVER['PHP_SELF']);
 function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
@@ -178,11 +182,11 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
                             <div class="empty-fallback-text">Tidak ada notifikasi aktif.</div>
                         <?php else: ?>
                             <?php foreach ($notifications as $n): ?>
-                                <div class="dropdown-item-node <?= empty($n['is_read']) ? 'unread' : '' ?>">
-                                    <div class="node-icon"><?= h($n['icon_symbol'] ?? '') ?></div>
+                                <div class="dropdown-item-node">
+                                    <div class="node-icon"><?= h($n['category'] ?? '') ?></div>
                                     <div class="node-body">
-                                        <p><?= h($n['text_content'] ?? '') ?></p>
-                                        <span><?= h($n['time_ago'] ?? '') ?></span>
+                                        <p><?= h($n['content'] ?? ($n['title'] ?? '')) ?></p>
+                                        <span><?= isset($n['created_at']) ? h($n['created_at']) : '' ?></span>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
