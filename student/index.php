@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 require_once "../config/db.php";
@@ -241,7 +240,7 @@ $unread_count = 0;
 
         <nav class="sidebar-menu">
             <div class="menu-category">MAIN MENU</div>
-            <a href="dashboard.php" class="menu-item active">
+            <a href="index.php" class="menu-item active">
                 <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> BERANDA
             </a>
             <a href="profile.php" class="menu-item">
@@ -422,49 +421,48 @@ $unread_count = 0;
                 <div class="content-card">
                     <div class="card-top">
                         <h3>Aksi Cepat</h3>
-                        <a href="#" class="action-link">Edit →</a>
                     </div>
                     <div class="quick-actions-box flex-stretch-actions">
-                        <div class="action-node">
+                        <a href="presensi.php" class="action-node">
                             <div class="action-node-icon absensi">
                                 <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                             </div>
                             <span>Absensi</span>
-                        </div>
-                        <div class="action-node">
+                        </a>
+                        <a href="kartu-mahasiswa.php" class="action-node">
                             <div class="action-node-icon k-studi">
                                 <svg viewBox="0 0 24 24"><path d="M21 4H3c-1.11 0-2 .89-2 2v12c0 1.1.89 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1.5 3c.83 0 1.5.67 1.5 1.5S20.33 10 19.5 10 18 9.33 18 8.5 18.67 7 19.5 7zM6 15H4v-2h2v2zm0-4H4V9h2v2zm14 4H8v-2h12v2zm0-4H8V9h12v2z"/></svg>
                             </div>
                             <span>Kartu Studi</span>
-                        </div>
-                        <div class="action-node">
+                        </a>
+                        <a href="transkrip.php" class="action-node">
                             <div class="action-node-icon transkrip">
                                 <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
                             </div>
                             <span>Transkrip</span>
-                        </div>
-                        <div class="action-node">
+                        </a>
+                        <a href="jadwal.php" class="action-node">
                             <div class="action-node-icon jadwal">
                                 <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
                             </div>
                             <span>Jadwal</span>
-                        </div>
-                        <div class="action-node">
+                        </a>
+                        <a href="krs.php" class="action-node">
                             <div class="action-node-icon krs">
                                 <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1 2 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
                             </div>
                             <span>KRS</span>
-                        </div>
-                        <div class="action-node">
+                        </a>
+                        <a href="bimbingan.php" class="action-node">
                             <div class="action-node-icon bimbingan">
                                 <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
                             </div>
                             <span>Bimbingan Akademik</span>
-                        </div>
+                        </a>
                     </div>
                     <div class="card-action-triggers">
-                        <button class="trigger-btn btn-blue">Portal Utama</button>
-                        <button class="trigger-btn btn-red">E-Learning</button>
+                        <a href="https://sia.example.ac.id" target="_blank" class="trigger-btn btn-blue">Portal Utama</a>
+                        <a href="https://elearning.example.ac.id" target="_blank" class="trigger-btn btn-red">E-Learning</a>
                     </div>
                 </div>
 
