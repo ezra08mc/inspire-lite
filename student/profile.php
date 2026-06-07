@@ -131,165 +131,304 @@ $unread_count = 0; // Placeholder
                 <?php endforeach; ?>
             <?php endif; ?>
 
-            <div class="profile-grid">
-                <div class="content-card profile-main-card">
-                    <div class="profile-header-strip">
-                        <div class="profile-avatar-large"><?= htmlspecialchars($initials) ?></div>
-                        <div class="profile-title-group">
-                            <h2><?= htmlspecialchars($student_name) ?></h2>
-                            <p class="profile-subtitle"><?= htmlspecialchars($nim) ?> · <?= htmlspecialchars($student_data["study_program"] ?? "-") ?></p>
-                        </div>
-                    </div>
-
-                    <div class="info-sections-container">
-                        <div class="info-section">
-                            <h4>BIODATA DIRI</h4>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <label>NAMA LENGKAP</label>
-                                    <p><?= htmlspecialchars($student_name) ?></p>
-                                </div>
-                                <div class="info-item">
-                                    <label>NOMOR INDUK MAHASISWA (NIM)</label>
-                                    <p><?= htmlspecialchars($nim) ?></p>
-                                </div>
-                                <div class="info-item">
-                                    <label>PROGRAM STUDI</label>
-                                    <p><?= htmlspecialchars($student_data["study_program"] ?? "-") ?></p>
-                                </div>
-                                <div class="info-item">
-                                    <label>ANGKATAN</label>
-                                    <p><?= htmlspecialchars($student_data["cohort"] ?? "-") ?></p>
-                                </div>
-                                <div class="info-item">
-                                    <label>TANGGAL LAHIR</label>
-                                    <p><?= htmlspecialchars($student_data["birth_date"] ?? "-") ?></p>
-                                </div>
-                                <div class="info-item">
-                                    <label>STATUS MAHASISWA</label>
-                                    <p><span class="badge-active">Aktif</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="content-card stats-summary-card">
-                    <h3>Ringkasan Akademik</h3>
-                    <div class="stats-list">
-                        <div class="stat-node">
-                            <span class="stat-label">IPK KUMULATIF</span>
-                            <span class="stat-value"><?= htmlspecialchars($stats["ipk_kumulatif"] ?? "0.00") ?></span>
-                        </div>
-                        <div class="stat-node">
-                            <span class="stat-label">SKS DITEMPUH</span>
-                            <span class="stat-value"><?= htmlspecialchars($stats["sks_ditempuh"] ?? "0") ?></span>
-                        </div>
-                        <div class="stat-node">
-                            <span class="stat-label">IP SEMESTER</span>
-                            <span class="stat-value"><?= htmlspecialchars($stats["ip_semester"] ?? "0.00") ?></span>
-                        </div>
-                        <div class="stat-node">
-                            <span class="stat-label">SKS SEMESTER</span>
-                            <span class="stat-value"><?= htmlspecialchars($stats["sks_semester"] ?? "0") ?></span>
+            <!-- Hero Card -->
+            <div class="profile-hero-card content-card">
+                <div class="profile-hero-inner">
+                    <div class="profile-avatar-xl"><?= htmlspecialchars($initials) ?></div>
+                    <div class="profile-hero-info">
+                        <div class="profile-hero-name"><?= htmlspecialchars($student_name) ?></div>
+                        <div class="profile-hero-meta">
+                            <span class="profile-meta-chip">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                                <?= htmlspecialchars($nim) ?>
+                            </span>
+                            <span class="profile-meta-chip">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                                <?= htmlspecialchars($student_data["study_program"] ?? "-") ?>
+                            </span>
+                            <span class="badge-active-hero">
+                                <span class="badge-dot"></span>
+                                Aktif
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Two-column layout -->
+            <div class="profile-two-col">
+
+                <!-- Left: Biodata -->
+                <div class="content-card profile-biodata-card">
+                    <div class="card-section-header">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg>
+                        <h3>Biodata Diri</h3>
+                    </div>
+
+                    <div class="biodata-rows">
+                        <div class="biodata-row">
+                            <span class="biodata-label">Nama Lengkap</span>
+                            <span class="biodata-value"><?= htmlspecialchars($student_name) ?></span>
+                        </div>
+                        <div class="biodata-row">
+                            <span class="biodata-label">NIM</span>
+                            <span class="biodata-value"><?= htmlspecialchars($nim) ?></span>
+                        </div>
+                        <div class="biodata-row">
+                            <span class="biodata-label">Program Studi</span>
+                            <span class="biodata-value"><?= htmlspecialchars($student_data["study_program"] ?? "-") ?></span>
+                        </div>
+                        <div class="biodata-row">
+                            <span class="biodata-label">Angkatan</span>
+                            <span class="biodata-value"><?= htmlspecialchars($student_data["cohort"] ?? "-") ?></span>
+                        </div>
+                        <div class="biodata-row">
+                            <span class="biodata-label">Tanggal Lahir</span>
+                            <span class="biodata-value"><?= htmlspecialchars($student_data["birth_date"] ?? "-") ?></span>
+                        </div>
+                        <div class="biodata-row last">
+                            <span class="biodata-label">Status</span>
+                            <span class="biodata-value">
+                                <span class="badge-active-inline">Aktif</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Academic Summary -->
+                <div class="content-card profile-stats-card">
+                    <div class="card-section-header">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+                        <h3>Ringkasan Akademik</h3>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-tile stat-tile--primary">
+                            <div class="stat-tile-value"><?= htmlspecialchars($stats["ipk_kumulatif"] ?? "0.00") ?></div>
+                            <div class="stat-tile-label">IPK Kumulatif</div>
+                        </div>
+                        <div class="stat-tile">
+                            <div class="stat-tile-value"><?= htmlspecialchars($stats["sks_ditempuh"] ?? "0") ?></div>
+                            <div class="stat-tile-label">SKS Ditempuh</div>
+                        </div>
+                        <div class="stat-tile">
+                            <div class="stat-tile-value"><?= htmlspecialchars($stats["ip_semester"] ?? "0.00") ?></div>
+                            <div class="stat-tile-label">IP Semester</div>
+                        </div>
+                        <div class="stat-tile">
+                            <div class="stat-tile-value"><?= htmlspecialchars($stats["sks_semester"] ?? "0") ?></div>
+                            <div class="stat-tile-label">SKS Semester</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.profile-two-col -->
         </main>
     </div>
 
     <style>
-        .profile-grid {
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 24px;
+        /* ── Hero Card ─────────────────────────────────────── */
+        .profile-hero-card {
+            margin-bottom: 20px;
+            padding: 28px 32px;
         }
-        .profile-header-strip {
+        .profile-hero-inner {
             display: flex;
             align-items: center;
             gap: 24px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 24px;
         }
-        .profile-avatar-large {
-            width: 80px;
-            height: 80px;
-            background-color: var(--primary);
-            color: white;
+        .profile-avatar-xl {
+            width: 72px;
+            height: 72px;
+            min-width: 72px;
+            background: var(--primary);
+            color: #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: 800;
+            letter-spacing: -0.02em;
         }
-        .profile-title-group h2 {
-            font-size: 1.5rem;
-            margin-bottom: 4px;
+        .profile-hero-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .profile-subtitle {
-            color: var(--muted-foreground);
-            font-size: 0.9rem;
+        .profile-hero-name {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
         }
-        .info-section h4 {
+        .profile-hero-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .profile-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.75);
             font-size: 0.75rem;
-            color: var(--primary);
-            letter-spacing: 0.1em;
-            margin-bottom: 16px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.01em;
         }
-        .info-grid {
+        .badge-active-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.35);
+            color: #34d399;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.03em;
+        }
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: #34d399;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* ── Two-column layout ─────────────────────────────── */
+        .profile-two-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        .info-item label {
-            display: block;
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: var(--muted-foreground);
-            margin-bottom: 4px;
-        }
-        .info-item p {
-            font-weight: 600;
-            color: #1f2937;
-        }
-        .badge-active {
-            background-color: #10b981;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
-        .stats-list {
+
+        /* ── Section header inside cards ───────────────────── */
+        .card-section-header {
             display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-top: 20px;
-        }
-        .stat-node {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding-bottom: 12px;
+            align-items: center;
+            gap: 9px;
+            padding-bottom: 16px;
             border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
         }
-        .stat-node:last-child {
-            border-bottom: none;
+        .card-section-header svg {
+            fill: var(--primary);
+            opacity: 0.9;
+            flex-shrink: 0;
         }
-        .stat-label {
-            font-size: 0.7rem;
+        .card-section-header h3 {
+            font-size: 0.85rem;
             font-weight: 700;
-            color: var(--muted-foreground);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.85);
         }
-        .stat-value {
-            font-size: 1.25rem;
+
+        /* ── Biodata rows ──────────────────────────────────── */
+        .biodata-rows {
+            display: flex;
+            flex-direction: column;
+        }
+        .biodata-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+        }
+        .biodata-row.last {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .biodata-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.45);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .biodata-value {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            text-align: right;
+        }
+        .badge-active-inline {
+            display: inline-block;
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.35);
+            color: #34d399;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 5px;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── Stats grid ────────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .stat-tile {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 18px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: background 0.15s;
+        }
+        .stat-tile:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .stat-tile--primary {
+            background: rgba(255,59,48,0.12);
+            border-color: rgba(255,59,48,0.25);
+        }
+        .stat-tile--primary:hover {
+            background: rgba(255,59,48,0.18);
+        }
+        .stat-tile-value {
+            font-size: 1.6rem;
             font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .stat-tile--primary .stat-tile-value {
             color: var(--primary);
         }
-        @media (max-width: 992px) {
-            .profile-grid { grid-template-columns: 1fr; }
+        .stat-tile-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: rgba(255,255,255,0.45);
+        }
+
+        /* ── Responsive ────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .profile-two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 560px) {
+            .profile-hero-card { padding: 20px; }
+            .profile-avatar-xl { width: 56px; height: 56px; min-width: 56px; font-size: 1.2rem; }
+            .profile-hero-name { font-size: 1.1rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </body>
