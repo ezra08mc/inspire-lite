@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 
 if (!isset($_SESSION["role"])) {
@@ -19,7 +19,7 @@ switch ($role) {
         header("Location: staff/index.php");
         break;
     case "admin":
-        header("Location: admin/dashboard.php");
+        header("Location: admin/index.php");
         break;
     default:
         header("Location: login.php");
