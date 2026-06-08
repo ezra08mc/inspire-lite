@@ -1,4 +1,12 @@
 <?php
+session_start();
+require_once "../config/db.php";
+
+if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "lecturer") {
+    header("Location: ../login.php");
+    exit();
+}
+
 $userId = (int) ($_SESSION["user_id"] ?? 0);
 
 $lecturer_name = "";
