@@ -434,3 +434,29 @@ CREATE TABLE IF NOT EXISTS `jadwal` (
 
 INSERT INTO `jadwal` (`kode_mk`, `nama_mata_kuliah`, `sks`, `kelas`, `dosen_pengampu`, `hari`, `tanggal`, `jam_mulai`, `jam_selesai`, `ruangan`)
 VALUES ('TIK2032', 'PEMROGRAMAN WEB', 3, 'E', '(Nama Dosen)', 'Senin', '2026-06-08', '13:00:00', '15:30:00', 'UPT TIK');
+
+--
+-- Table structure for table `presensi_sessions`
+--
+
+CREATE TABLE IF NOT EXISTS `presensi_sessions` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `nip` varchar(20) NOT NULL,
+    `course_code` varchar(10) NOT NULL,
+    `tanggal` date NOT NULL,
+    `kode_presensi` varchar(6) NOT NULL,
+    `status` enum('open','closed') DEFAULT 'open',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `student_presensi`
+--
+
+CREATE TABLE IF NOT EXISTS `student_presensi` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `session_id` int(11) NOT NULL,
+    `nim` varchar(15) NOT NULL,
+    `waktu_presensi` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

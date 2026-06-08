@@ -1,9 +1,9 @@
-﻿<?php
+<?php
 session_start();
-require_once "../config/db.php";
+require_once "../../config/db.php";
 
 if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "student") {
-    header("Location: ../login.php");
+    header("Location: ../../login.php");
     exit();
 }
 
@@ -13,7 +13,9 @@ $nim = $_SESSION["username"] ?? "";
 $data_errors = [];
 
 try {
-    $stmt = $pdo->prepare("SELECT nim, first_name, last_name FROM students WHERE user_id = :user_id LIMIT 1");
+    $stmt = $pdo->prepare(
+        "SELECT nim, first_name, last_name FROM students WHERE user_id = :user_id LIMIT 1",
+    );
     $stmt->execute([":user_id" => $user_id]);
     $student_data = $stmt->fetch();
     if ($student_data) {
@@ -28,7 +30,9 @@ try {
 
 $full_schedule = [];
 try {
-    $stmt = $pdo->prepare("SELECT kode_mk, nama_mata_kuliah, sks, kelas, dosen_pengampu, hari, jam_mulai, jam_selesai, ruangan FROM jadwal ORDER BY FIELD(hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'), jam_mulai ASC");
+    $stmt = $pdo->prepare(
+        "SELECT kode_mk, nama_mata_kuliah, sks, kelas, dosen_pengampu, hari, jam_mulai, jam_selesai, ruangan FROM jadwal ORDER BY FIELD(hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'), jam_mulai ASC",
+    );
     $stmt->execute();
     $full_schedule = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -38,16 +42,19 @@ try {
 $initials = "";
 if (!empty($student_name)) {
     $parts = explode(" ", $student_name);
-    $initials = strtoupper(substr($parts[0], 0, 1) . (isset($parts[1]) ? substr($parts[1], 0, 1) : ""));
+    $initials = strtoupper(
+        substr($parts[0], 0, 1) .
+            (isset($parts[1]) ? substr($parts[1], 0, 1) : ""),
+    );
 } else {
     $initials = strtoupper(substr($nim, 0, 2));
 }
 $display_name = $student_name ?: $nim;
 $unread_count = 0;
 
-$base_path = "../";
+$base_path = "../../";
 $page_title = "Jadwal Kuliah - INSPIRE Lite";
-$current_page = "jadwal";
+$current_page = "perkuliahan";
 
 include $base_path . "includes/header.php";
 include $base_path . "includes/sidebar.php";
@@ -82,13 +89,31 @@ include $base_path . "includes/sidebar.php";
                         <?php else: ?>
                             <?php foreach ($full_schedule as $item): ?>
                                 <tr>
-                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><strong><?= htmlspecialchars($item["hari"]) ?></strong></td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><?= htmlspecialchars(substr($item["jam_mulai"], 0, 5)) ?> - <?= htmlspecialchars(substr($item["jam_selesai"], 0, 5)) ?></td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><div style="display: flex; flex-direction: column;"><span style="font-size: 0.75rem; color: #6b7280;"><?= htmlspecialchars($item["kode_mk"]) ?></span><span style="font-weight: 600;"><?= htmlspecialchars($item["nama_mata_kuliah"]) ?></span></div></td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><?= htmlspecialchars($item["sks"]) ?></td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><?= htmlspecialchars($item["kelas"]) ?></td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><span style="padding: 4px 8px; background: #eff6ff; color: #1d4ed8; border-radius: 4px; font-size: 0.75rem;"><?= htmlspecialchars($item["ruangan"]) ?></span></td>
-                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-size: 0.875rem;"><?= htmlspecialchars($item["dosen_pengampu"]) ?></td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><strong><?= htmlspecialchars(
+                                        $item["hari"],
+                                    ) ?></strong></td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><?= htmlspecialchars(
+                                        substr($item["jam_mulai"], 0, 5),
+                                    ) ?> - <?= htmlspecialchars(
+     substr($item["jam_selesai"], 0, 5),
+ ) ?></td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><div style="display: flex; flex-direction: column;"><span style="font-size: 0.75rem; color: #6b7280;"><?= htmlspecialchars(
+                                        $item["kode_mk"],
+                                    ) ?></span><span style="font-weight: 600;"><?= htmlspecialchars(
+    $item["nama_mata_kuliah"],
+) ?></span></div></td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><?= htmlspecialchars(
+                                        $item["sks"],
+                                    ) ?></td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><?= htmlspecialchars(
+                                        $item["kelas"],
+                                    ) ?></td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><span style="padding: 4px 8px; background: #eff6ff; color: #1d4ed8; border-radius: 4px; font-size: 0.75rem;"><?= htmlspecialchars(
+                                        $item["ruangan"],
+                                    ) ?></span></td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-size: 0.875rem;"><?= htmlspecialchars(
+                                        $item["dosen_pengampu"],
+                                    ) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>

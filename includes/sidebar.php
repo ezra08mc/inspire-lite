@@ -43,7 +43,7 @@ $role = $_SESSION["role"] ?? "";
                 <svg class="arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
             </div>
             <div class="submenu-items" style="display: none;">
-                <a href="<?= $base_path ?>student/jadwal.php" class="sub-menu-link">Jadwal Kuliah</a>
+                <a href="<?= $base_path ?>student/perkuliahan/jadwal.php" class="sub-menu-link">Jadwal Kuliah</a>
                 <a href="<?= $base_path ?>student/perkuliahan/krs.php" class="sub-menu-link">KRS</a>
                 <a href="<?= $base_path ?>student/perkuliahan/khs.php" class="sub-menu-link">KHS</a>
                 <a href="<?= $base_path ?>student/perkuliahan/presensi.php" class="sub-menu-link">Presensi</a>
@@ -60,6 +60,7 @@ $role = $_SESSION["role"] ?? "";
     : "" ?>">
                 <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> BERANDA
             </a>
+
             <div class="menu-category-toggle <?= in_array($current_page, [
                 "manage_users",
                 "provisions",
@@ -67,13 +68,13 @@ $role = $_SESSION["role"] ?? "";
                 ? "expanded"
                 : "" ?>" onclick="toggleSubmenu(event, this)">
                 <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-                <span>PENGELOLAAN PENGGUNA</span>
+                <span>PENGGUNA</span>
                 <svg class="arrow <?= in_array($current_page, [
                     "manage_users",
                     "provisions",
                 ])
                     ? "down"
-                    : "" ?>" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                    : "" ?>" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
             </div>
             <div class="submenu-items" style="display: <?= in_array(
                 $current_page,
@@ -84,15 +85,79 @@ $role = $_SESSION["role"] ?? "";
                 <a href="<?= $base_path ?>admin/users/manage.php" class="sub-menu-link <?= $current_page ===
 "manage_users"
     ? "active"
-    : "" ?>">
-                    <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2c1.66 0 3-1.34 3-3S7.66 4 6 4 3 5.34 3 7s1.34 3 3 3zm0 4c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4zm9 0c-.29 0-.62.02-.97.05 1.16.89 1.97 2.48 1.97 4.21v3h6v-3c0-2.66-4.05-4-4-4z"/></svg> Kelola Pengguna
-                </a>
+    : "" ?>">Kelola Pengguna</a>
                 <a href="<?= $base_path ?>admin/users/provisions.php" class="sub-menu-link <?= $current_page ===
 "provisions"
     ? "active"
-    : "" ?>">
-                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Penyediaan Akun
-                </a>
+    : "" ?>">Penyediaan Akun</a>
+            </div>
+
+            <div class="menu-category-toggle <?= in_array($current_page, [
+                "announcements",
+                "calendar",
+            ])
+                ? "expanded"
+                : "" ?>" onclick="toggleSubmenu(event, this)">
+                <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+                <span>AKADEMIK</span>
+                <svg class="arrow <?= in_array($current_page, [
+                    "announcements",
+                    "calendar",
+                ])
+                    ? "down"
+                    : "" ?>" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </div>
+            <div class="submenu-items" style="display: <?= in_array(
+                $current_page,
+                ["announcements", "calendar"],
+            )
+                ? "flex"
+                : "none" ?>;">
+                <a href="<?= $base_path ?>admin/announcements.php" class="sub-menu-link <?= $current_page ===
+"announcements"
+    ? "active"
+    : "" ?>">Pengumuman</a>
+                <a href="<?= $base_path ?>admin/settings/calendar.php" class="sub-menu-link <?= $current_page ===
+"calendar"
+    ? "active"
+    : "" ?>">Jadwal & Kalender</a>
+            </div>
+
+            <div class="menu-category-toggle <?= in_array($current_page, [
+                "branding",
+                "backup",
+                "logs",
+            ])
+                ? "expanded"
+                : "" ?>" onclick="toggleSubmenu(event, this)">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                <span>SISTEM</span>
+                <svg class="arrow <?= in_array($current_page, [
+                    "branding",
+                    "backup",
+                    "logs",
+                ])
+                    ? "down"
+                    : "" ?>" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </div>
+            <div class="submenu-items" style="display: <?= in_array(
+                $current_page,
+                ["branding", "backup", "logs"],
+            )
+                ? "flex"
+                : "none" ?>;">
+                <a href="<?= $base_path ?>admin/assets/branding.php" class="sub-menu-link <?= $current_page ===
+"branding"
+    ? "active"
+    : "" ?>">Branding Portal</a>
+                <a href="<?= $base_path ?>admin/infrastructure/backup.php" class="sub-menu-link <?= $current_page ===
+"backup"
+    ? "active"
+    : "" ?>">Backup Data</a>
+                <a href="<?= $base_path ?>admin/security/logs.php" class="sub-menu-link <?= $current_page ===
+"logs"
+    ? "active"
+    : "" ?>">Log Keamanan</a>
             </div>
 
         <?php elseif ($role === "lecturer"): ?>
