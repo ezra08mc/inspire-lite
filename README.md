@@ -18,7 +18,7 @@
 ```text
 inspire-lite/
 ├── index.php                         # Application routing gateway controller
-├── login.php                         # Glassmorphism login engine with input tracking
+├── login.php                         # Login engine with input tracking
 ├── logout.php                        # Session lifecycle cleanup script
 ├── .env.example                      # Environment configuration template
 ├── .gitignore                        # Excludes editor logs, secrets, Syncthing
@@ -30,8 +30,8 @@ inspire-lite/
 │
 ├── assets/
 │   ├── css/
-│   │   ├── style.css                 # Core CSS & glassmorphism design tokens
-│   │   └── dashboard.css             # Dashboard specific styling
+│   │   ├── style.css                 # Core CSS
+│   │   └── dashboard.css             # Dashboard styles (imports style.css)
 │   ├── img/
 │   │   ├── logo.png                  # Centered portal brand header (300x100px)
 │   │   ├── logo1.png                 # Alternative logo variant
@@ -44,15 +44,15 @@ inspire-lite/
 │   └── dashboard.php                 # Administrative system controls, user provisioning & portal configuration
 │
 ├── staff/
-│   └── dashboard.php                 # Academic records management, enrollment registry & operations
+│   └── index.php                 # Academic records management, enrollment registry & operations
 │
 ├── lecturer/
-│   └── dashboard.php                 # Instructor grade management, course syllabus assignment & evaluation
+│   └── index.php                 # Instructor grade management, course syllabus assignment & evaluation
 │
 └── student/
-    ├── dashboard.php                 # Main student portal (Hero banner & Quick Actions)
-    ├── profil/
-    │   └── index.php                 # Student biodata & profile viewer
+    ├── index.php                 # Main student portal (Hero banner & Quick Actions)
+    ├── profile.php               # Student biodata & profile viewer
+    ├── announcements.php         # Official academic and faculty announcements
     ├── pusat-informasi/
     │   └── index.php                 # Campus information bulletin hub
     ├── perkuliahan/
@@ -160,9 +160,8 @@ Access the application at `http://localhost:8000`
 - [x] Folder structure setup
 - [x] Login/logout system
 - [x] Database schema
-- [ ] Complete dashboard per role
+- [ ] Complete homepage & dashboard per role
 - [ ] Course registration module (KRS/KHS)
 - [ ] Attendance tracking module
 - [ ] Grade input module
-- [ ] Student affairs features
 - [ ] Student affairs features
