@@ -10,50 +10,76 @@ if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
 $user_id = $_SESSION["user_id"];
 $admin_name = "";
 try {
-    $stmt = $pdo->prepare("SELECT first_name, last_name FROM admins WHERE user_id = :user_id LIMIT 1");
-    $stmt->execute([':user_id' => $user_id]);
+    $stmt = $pdo->prepare(
+        "SELECT first_name, last_name FROM admins WHERE user_id = :user_id LIMIT 1",
+    );
+    $stmt->execute([":user_id" => $user_id]);
     $admin_data = $stmt->fetch();
     if ($admin_data) {
-        $admin_name = $admin_data['first_name'] . ' ' . $admin_data['last_name'];
+        $admin_name =
+            $admin_data["first_name"] . " " . $admin_data["last_name"];
     }
-} catch (PDOException $e) {}
+} catch (PDOException $e) {
+}
 
 $success = null;
 $error = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $type = trim($_POST['type'] ?? '');
-    $badge_class = trim($_POST['badge_class'] ?? 'blue');
-    $date_text = trim($_POST['date_text'] ?? '');
-    $title = trim($_POST['title'] ?? '');
-    $content = trim($_POST['content'] ?? '');
-    $author = trim($_POST['author'] ?? '');
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $type = trim($_POST["type"] ?? "");
+    $badge_class = trim($_POST["badge_class"] ?? "blue");
+    $date_text = trim($_POST["date_text"] ?? "");
+    $title = trim($_POST["title"] ?? "");
+    $content = trim($_POST["content"] ?? "");
+    $author = trim($_POST["author"] ?? "");
 
-    if ($type === '' || $date_text === '' || $title === '' || $content === '' || $author === '') {
-        $error = 'Semua field wajib diisi.';
+    if (
+        $type === "" ||
+        $date_text === "" ||
+        $title === "" ||
+        $content === "" ||
+        $author === ""
+    ) {
+        $error = "Semua field wajib diisi.";
     } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO announcements (type, badge_class, date_text, title, content, author) VALUES (:type, :badge_class, :date_text, :title, :content, :author)");
-            $stmt->execute([':type' => $type, ':badge_class' => $badge_class, ':date_text' => $date_text, ':title' => $title, ':content' => $content, ':author' => $author]);
-            $success = 'Pengumuman ditambahkan.';
-        } catch (PDOException $e) { $error = 'Gagal menambahkan pengumuman.'; }
+            $stmt = $pdo->prepare(
+                "INSERT INTO announcements (type, badge_class, date_text, title, content, author) VALUES (:type, :badge_class, :date_text, :title, :content, :author)",
+            );
+            $stmt->execute([
+                ":type" => $type,
+                ":badge_class" => $badge_class,
+                ":date_text" => $date_text,
+                ":title" => $title,
+                ":content" => $content,
+                ":author" => $author,
+            ]);
+            $success = "Pengumuman ditambahkan.";
+        } catch (PDOException $e) {
+            $error = "Gagal menambahkan pengumuman.";
+        }
     }
 }
 
-if (isset($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
+if (isset($_GET["delete"])) {
+    $id = (int) $_GET["delete"];
     try {
         $stmt = $pdo->prepare("DELETE FROM announcements WHERE id = :id");
-        $stmt->execute([':id' => $id]);
-        $success = 'Pengumuman dihapus.';
-    } catch (PDOException $e) { $error = 'Gagal menghapus pengumuman.'; }
+        $stmt->execute([":id" => $id]);
+        $success = "Pengumuman dihapus.";
+    } catch (PDOException $e) {
+        $error = "Gagal menghapus pengumuman.";
+    }
 }
 
 $items = [];
 try {
-    $stmt = $pdo->query("SELECT id, type, badge_class, date_text, title, content, author FROM announcements ORDER BY id DESC");
+    $stmt = $pdo->query(
+        "SELECT id, type, badge_class, date_text, title, content, author FROM announcements ORDER BY id DESC",
+    );
     $items = $stmt->fetchAll();
-} catch (PDOException $e) {}
+} catch (PDOException $e) {
+}
 
 $base_path = "../";
 $page_title = "Kelola Pengumuman - Admin";
@@ -92,8 +118,19 @@ include $base_path . "includes/sidebar.php";
                 <form method="POST" style="padding: 20px; display: grid; gap: 15px;">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <label style="display:flex; flex-direction:column; gap:5px;">
-                            <span>Type</span>
-                            <input required name="type" type="text" placeholder="PENTING/UMUM/REKTORAT" style="padding:10px; border:1px solid #e5e7eb; border-radius:6px;" />
+                            <span>Kategori</span>
+                            <select name="type" required style="padding:10px; border:1px solid #e5e7eb; border-radius:6px;">
+                                <option value="">-- Pilih Kategori --</option>
+                                <option value="Umum">Umum</option>
+                                <option value="Penting">Penting</option>
+                                <option value="Rektorat">Rektorat</option>
+                                <option value="Dekanat">Dekanat</option>
+                                <option value="Jurusan">Jurusan</option>
+                                <option value="Akademik">Akademik</option>
+                                <option value="Keuangan">Keuangan</option>
+                                <option value="UPT TIK">UPT TIK</option>
+                                <option value="Perpustakaan">Perpustakaan</option>
+                            </select>
                         </label>
                         <label style="display:flex; flex-direction:column; gap:5px;">
                             <span>Badge Class</span>
@@ -107,11 +144,15 @@ include $base_path . "includes/sidebar.php";
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <label style="display:flex; flex-direction:column; gap:5px;">
                             <span>Tanggal</span>
-                            <input required name="date_text" type="text" value="<?= date('d M Y') ?>" style="padding:10px; border:1px solid #e5e7eb; border-radius:6px;" />
+                            <input required name="date_text" type="text" value="<?= date(
+                                "d M Y",
+                            ) ?>" style="padding:10px; border:1px solid #e5e7eb; border-radius:6px;" />
                         </label>
                         <label style="display:flex; flex-direction:column; gap:5px;">
                             <span>Author</span>
-                            <input required name="author" type="text" value="<?= htmlspecialchars($admin_name ?: 'Administrator') ?>" style="padding:10px; border:1px solid #e5e7eb; border-radius:6px;" />
+                            <input required name="author" type="text" value="<?= htmlspecialchars(
+                                $admin_name ?: "Administrator",
+                            ) ?>" style="padding:10px; border:1px solid #e5e7eb; border-radius:6px;" />
                         </label>
                     </div>
 
@@ -142,13 +183,28 @@ include $base_path . "includes/sidebar.php";
                             <?php foreach ($items as $it): ?>
                                 <div style="display: flex; gap: 15px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px;">
                                     <div style="flex: 1;">
-                                        <div style="font-weight: 600; margin-bottom: 5px;"><?= htmlspecialchars($it['title']) ?></div>
-                                        <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 8px;"><?= htmlspecialchars($it['date_text']) ?> · <?= htmlspecialchars($it['type']) ?></div>
+                                        <div style="font-weight: 600; margin-bottom: 5px;"><?= htmlspecialchars(
+                                            $it["title"],
+                                        ) ?></div>
+                                        <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 8px;"><?= htmlspecialchars(
+                                            $it["date_text"],
+                                        ) ?> · <?= htmlspecialchars(
+     $it["type"],
+ ) ?></div>
                                         <div style="font-size: 0.9rem; line-height: 1.4; color: #374151;">
-                                            <?= htmlspecialchars(mb_strimwidth($it['content'], 0, 150, '…')) ?>
+                                            <?= htmlspecialchars(
+                                                mb_strimwidth(
+                                                    $it["content"],
+                                                    0,
+                                                    150,
+                                                    "…",
+                                                ),
+                                            ) ?>
                                         </div>
                                     </div>
-                                    <a href="announcements.php?delete=<?= $it['id'] ?>" onclick="return confirm('Hapus?')" style="color: #b91c1c; text-decoration: none; font-size: 0.85rem; font-weight: 600;">Hapus</a>
+                                    <a href="announcements.php?delete=<?= $it[
+                                        "id"
+                                    ] ?>" onclick="return confirm('Hapus?')" style="color: #b91c1c; text-decoration: none; font-size: 0.85rem; font-weight: 600;">Hapus</a>
                                 </div>
                             <?php endforeach; ?>
                         </div>

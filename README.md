@@ -1,4 +1,4 @@
-<div align="center">
+ziv align="center">
   
   <h1>INSPIRE Lite</h1>
   <h3><b>A Minimalist Campus Management Information System</b></h3>  

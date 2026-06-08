@@ -1,8 +1,7 @@
 <?php
 $initials = $initials ?? "??";
 $display_name = $display_name ?? ($_SESSION["username"] ?? "User");
-$role_label = ucfirst($_SESSION["role"] ?? "User");
-$user_id_sub = $_SESSION["username"] ?? "-";
+$user_id_sub = $nim ?? ($_SESSION["username"] ?? "-");
 ?>
 <header class="navbar">
     <button class="menu-toggle-hamburger" id="hamburgerBtn">
@@ -19,7 +18,7 @@ $user_id_sub = $_SESSION["username"] ?? "-";
             <button class="notification-bell" id="notifBellBtn">
                 <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                 <?php if (isset($unread_count) && $unread_count > 0): ?>
-                    <span class="bell-badge"><?= (int)$unread_count ?></span>
+                    <span class="bell-badge"><?= (int) $unread_count ?></span>
                 <?php endif; ?>
             </button>
             <div class="dropdown-panel-notif" id="notifDropdown">
@@ -32,19 +31,31 @@ $user_id_sub = $_SESSION["username"] ?? "-";
 
         <div class="account-interaction-wrapper">
             <div class="profile-clickable-zone" id="profileMenuBtn">
-                <div class="avatar-circle"><?= htmlspecialchars($initials) ?></div>
+                <div class="avatar-circle"><?= htmlspecialchars(
+                    $initials,
+                ) ?></div>
                 <div class="user-info-text pc-only">
-                    <span class="user-name"><?= htmlspecialchars($display_name) ?></span>
-                    <span class="user-role"><?= htmlspecialchars($role_label) ?></span>
+                    <span class="user-name"><?= htmlspecialchars(
+                        $display_name,
+                    ) ?></span>
+                    <span class="user-role"><?= htmlspecialchars(
+                        $user_id_sub,
+                    ) ?></span>
                 </div>
             </div>
-            
+
             <div class="dropdown-panel-account" id="accountDropdown">
                 <div class="dropdown-account-header">
-                    <div class="avatar-circle"><?= htmlspecialchars($initials) ?></div>
+                    <div class="avatar-circle"><?= htmlspecialchars(
+                        $initials,
+                    ) ?></div>
                     <div class="user-meta">
-                        <p class="head-title"><?= htmlspecialchars($display_name) ?></p>
-                        <p class="head-sub"><?= htmlspecialchars($user_id_sub) ?></p>
+                        <p class="head-title"><?= htmlspecialchars(
+                            $display_name,
+                        ) ?></p>
+                        <p class="head-sub"><?= htmlspecialchars(
+                            $user_id_sub,
+                        ) ?></p>
                     </div>
                 </div>
                 <a href="<?= $base_path ?>student/profile.php" class="account-drop-link">

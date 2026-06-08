@@ -2,44 +2,162 @@
 require_once "../config/db.php";
 require_once "_layout.php";
 
-$lecturerId = (int)($_SESSION['user_id'] ?? 0);
+$lecturerId = (int) ($_SESSION["user_id"] ?? 0);
 
-$success = '';
-$error = '';
+$success = "";
+$error = "";
 
-$search = trim((string)($_GET['q'] ?? ''));
-$program = trim((string)($_GET['program'] ?? ''));
-$academicYear = trim((string)($_GET['academic_year'] ?? ''));
-$academicStatus = trim((string)($_GET['academic_status'] ?? ''));
-$advisingStatus = trim((string)($_GET['advising_status'] ?? ''));
+$search = trim((string) ($_GET["q"] ?? ""));
+$program = trim((string) ($_GET["program"] ?? ""));
+$academicYear = trim((string) ($_GET["academic_year"] ?? ""));
+$academicStatus = trim((string) ($_GET["academic_status"] ?? ""));
+$advisingStatus = trim((string) ($_GET["advising_status"] ?? ""));
 
-$selectedNim = trim((string)($_GET['nim'] ?? ''));
+$selectedNim = trim((string) ($_GET["nim"] ?? ""));
 
-function advising_safe_str($v): string {
-    return (string)$v;
+function advising_safe_str($v): string
+{
+    return (string) $v;
 }
 
-function gpa_bucket(?float $gpa): string {
-    if ($gpa === null) return '—';
-    if ($gpa < 2.5) return 'Low GPA';
-    if ($gpa < 3.0) return 'Fair GPA';
-    return 'Good GPA';
+function gpa_bucket(?float $gpa): string
+{
+    if ($gpa === null) {
+        return "—";
+    }
+    if ($gpa < 2.5) {
+        return "Low GPA";
+    }
+    if ($gpa < 3.0) {
+        return "Fair GPA";
+    }
+    return "Good GPA";
 }
 
-function academic_status_badge(?string $s): string {
-    $s = (string)($s ?? '');
-    if ($s === 'ON_TRACK') return 'label-badge red';
-    if ($s === 'AT_RISK') return 'label-badge red';
-    return '';
+function academic_status_badge(?string $s): string
+{
+    $s = (string) ($s ?? "");
+    if ($s === "ON_TRACK") {
+        return "label-badge red";
+    }
+    if ($s === "AT_RISK") {
+        return "label-badge red";
+    }
+    return "";
 }
 
-$advisedSessions = [];
-$advisees = [];
-$profile = null;
+// POST Handler: Unified for Chat and Formal Records
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $action = trim((string) ($_POST["action"] ?? ""));
 
+    // Handle Chat Message (from 'theirs')
+    if (isset($_POST["message"]) && $action === "") {
+        $receiver_id = (int) ($_POST["receiver_id"] ?? 0);
+        $message = trim($_POST["message"] ?? "");
+        $nim = trim((string) ($_POST["nim"] ?? ""));
+
+        if ($receiver_id && $message) {
+            try {
+                $stmt = $pdo->prepare(
+                    "INSERT INTO chat_messages (sender_id, receiver_id, message) VALUES (?, ?, ?)",
+                );
+                $stmt->execute([$lecturerId, $receiver_id, $message]);
+                $success = "Pesan terkirim.";
+                // No redirect for chat to keep scroll position if handled by JS, but here we reload
+            } catch (PDOException $e) {
+                $error = "Gagal mengirim pesan.";
+            }
+        } else {
+            $error = "Pilih mahasiswa dan ketik pesan.";
+        }
+    }
+    // Handle Formal Advising Session Actions (from 'HEAD')
+    else {
+        $nim = trim((string) ($_POST["nim"] ?? ""));
+        $tanggal = trim((string) ($_POST["tanggal"] ?? ""));
+        $topik = trim((string) ($_POST["topik"] ?? ""));
+        $catatan = trim((string) ($_POST["catatan"] ?? ""));
+        $rekomendasi = trim((string) ($_POST["rekomendasi"] ?? ""));
+        $followup = trim((string) ($_POST["followup"] ?? ""));
+        $id = (int) ($_POST["id"] ?? 0);
+
+        try {
+            if ($action === "create") {
+                if ($nim === "" || $tanggal === "") {
+                    $error = "NIM dan tanggal wajib diisi.";
+                } else {
+                    $msg = trim($topik !== "" ? $topik : $catatan);
+                    $stmt = $pdo->prepare(
+                        "INSERT INTO student_notifications (title, content, category, sender, created_at) VALUES (:title, :content, :category, :sender, :created_at)",
+                    );
+                    $stmt->execute([
+                        ":title" => "Advising Session",
+                        ":content" =>
+                            "NIM:" .
+                            $nim .
+                            " | " .
+                            $msg .
+                            " | " .
+                            ($rekomendasi !== ""
+                                ? "Rekomendasi:" . $rekomendasi
+                                : "") .
+                            " | " .
+                            ($followup !== "" ? "Follow-up:" . $followup : ""),
+                        ":category" => "BIMBINGAN",
+                        ":sender" => "Dosen " . $lecturerId,
+                        ":created_at" => $tanggal . " " . date("H:i:s"),
+                    ]);
+                    $success = "Sesi advising tersimpan.";
+                    header("Location: advising.php?nim=" . urlencode($nim));
+                    exit();
+                }
+            } elseif ($action === "delete" && $id > 0) {
+                $stmt = $pdo->prepare(
+                    "DELETE FROM student_notifications WHERE id = :id",
+                );
+                $stmt->execute([":id" => $id]);
+                $success = "Rekaman advising dihapus.";
+                header("Location: advising.php?nim=" . urlencode($nim));
+                exit();
+            } elseif ($action === "edit" && $id > 0) {
+                $msg = trim($topik !== "" ? $topik : $catatan);
+                $stmt = $pdo->prepare(
+                    "UPDATE student_notifications SET title = :title, content = :content, category = :category, sender = :sender, created_at = :created_at WHERE id = :id",
+                );
+                $stmt->execute([
+                    ":title" => "Advising Session",
+                    ":content" =>
+                        "NIM:" .
+                        $nim .
+                        " | " .
+                        $msg .
+                        " | " .
+                        ($rekomendasi !== ""
+                            ? "Rekomendasi:" . $rekomendasi
+                            : "") .
+                        " | " .
+                        ($followup !== "" ? "Follow-up:" . $followup : ""),
+                    ":category" => "BIMBINGAN",
+                    ":sender" => "Dosen " . $lecturerId,
+                    ":created_at" => $tanggal . " " . date("H:i:s"),
+                    ":id" => $id,
+                ]);
+                $success = "Sesi advising diperbarui.";
+                header("Location: advising.php?nim=" . urlencode($nim));
+                exit();
+            }
+        } catch (PDOException $e) {
+            $error = "Gagal menyimpan sesi advising.";
+        }
+    }
+}
+
+// Fetch filter options (from HEAD)
 $programs = [];
 try {
-    $stmt = $pdo->query("SELECT DISTINCT study_program FROM students ORDER BY study_program ASC");
+    $stmt = $pdo->query(
+        "SELECT DISTINCT study_program FROM students ORDER BY study_program ASC",
+    );
     $programs = $stmt->fetchAll();
 } catch (PDOException $e) {
     $programs = [];
@@ -47,122 +165,54 @@ try {
 
 $academicYears = [];
 try {
-    $stmt = $pdo->query("SELECT DISTINCT academic_year FROM students ORDER BY academic_year DESC");
+    $stmt = $pdo->query(
+        "SELECT DISTINCT academic_year FROM students ORDER BY academic_year DESC",
+    );
     $academicYears = $stmt->fetchAll();
 } catch (PDOException $e) {
     $academicYears = [];
 }
 
-$defaultAcademicYear = '';
-if (!empty($academicYears)) {
-    $defaultAcademicYear = (string)($academicYears[0]['academic_year'] ?? '');
-}
-
-if ($academicYear === '') {
+$defaultAcademicYear = !empty($academicYears)
+    ? (string) ($academicYears[0]["academic_year"] ?? "")
+    : "";
+if ($academicYear === "") {
     $academicYear = $defaultAcademicYear;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = trim((string)($_POST['action'] ?? 'create'));
-
-    $nim = trim((string)($_POST['nim'] ?? ''));
-    $tanggal = trim((string)($_POST['tanggal'] ?? ''));
-    $topik = trim((string)($_POST['topik'] ?? ''));
-    $catatan = trim((string)($_POST['catatan'] ?? ''));
-    $rekomendasi = trim((string)($_POST['rekomendasi'] ?? ''));
-    $followup = trim((string)($_POST['followup'] ?? ''));
-
-    $id = (int)($_POST['id'] ?? 0);
-
-    if ($nim === '' || $tanggal === '') {
-        $error = 'NIM dan tanggal wajib diisi.';
-    } else {
-        try {
-            if ($action === 'create') {
-                $msg = trim($topik !== '' ? $topik : $catatan);
-                $stmt = $pdo->prepare("INSERT INTO student_notifications (title, content, category, sender, created_at) VALUES (:title, :content, :category, :sender, NOW())");
-                $stmt->execute([
-                    ':title' => 'Advising Session',
-                    ':content' => 'NIM:' . $nim . ' | ' . $msg . ' | ' . ($rekomendasi !== '' ? 'Rekomendasi:' . $rekomendasi : '') . ' | ' . ($followup !== '' ? 'Follow-up:' . $followup : ''),
-                    ':category' => 'BIMBINGAN',
-                    ':sender' => 'Dosen ' . $lecturerId,
-                ]);
-                $success = 'Sesi advising tersimpan.';
-                header('Location: advising.php');
-                exit();
-            }
-
-            if ($action === 'delete') {
-                if ($id > 0) {
-                    $stmt = $pdo->prepare("DELETE FROM student_notifications WHERE id = :id");
-                    $stmt->execute([':id' => $id]);
-                    $success = 'Rekaman advising dihapus.';
-                }
-                header('Location: advising.php?nim=' . urlencode($nim));
-                exit();
-            }
-
-            if ($action === 'edit') {
-                if ($id > 0) {
-                    $msg = trim($topik !== '' ? $topik : $catatan);
-                    $stmt = $pdo->prepare("UPDATE student_notifications SET title = :title, content = :content, category = :category, sender = :sender, created_at = :created_at WHERE id = :id");
-                    $stmt->execute([
-                        ':title' => 'Advising Session',
-                        ':content' => 'NIM:' . $nim . ' | ' . $msg . ' | ' . ($rekomendasi !== '' ? 'Rekomendasi:' . $rekomendasi : '') . ' | ' . ($followup !== '' ? 'Follow-up:' . $followup : ''),
-                        ':category' => 'BIMBINGAN',
-                        ':sender' => 'Dosen ' . $lecturerId,
-                        ':created_at' => $tanggal,
-                        ':id' => $id,
-                    ]);
-                    $success = 'Sesi advising diperbarui.';
-                }
-                header('Location: advising.php?nim=' . urlencode($nim));
-                exit();
-            }
-        } catch (PDOException $e) {
-            $error = 'Gagal menyimpan sesi advising.';
-        }
-    }
-}
-
+// Fetch filtered advisees (from HEAD)
+$advisees = [];
 try {
-    $sql = "SELECT nim, first_name, last_name, study_program, academic_year, gpa, academic_status FROM students";
-
+    $sql =
+        "SELECT nim, first_name, last_name, study_program, academic_year, gpa, academic_status FROM students";
     $filters = [];
     $params = [];
 
-    if ($search !== '') {
+    if ($search !== "") {
         $filters[] = "(nim LIKE :q OR first_name LIKE :q OR last_name LIKE :q)";
-        $params[':q'] = '%' . $search . '%';
+        $params[":q"] = "%" . $search . "%";
     }
-
-    if ($program !== '') {
+    if ($program !== "") {
         $filters[] = "study_program = :program";
-        $params[':program'] = $program;
+        $params[":program"] = $program;
     }
-
-    if ($academicYear !== '') {
+    if ($academicYear !== "") {
         $filters[] = "academic_year = :academic_year";
-        $params[':academic_year'] = $academicYear;
+        $params[":academic_year"] = $academicYear;
     }
-
-    if ($academicStatus !== '') {
+    if ($academicStatus !== "") {
         $filters[] = "academic_status = :academic_status";
-        $params[':academic_status'] = $academicStatus;
+        $params[":academic_status"] = $academicStatus;
     }
-
-    if ($advisingStatus !== '') {
-        if ($advisingStatus === 'REQUIRES_ATTENTION') {
-            $filters[] = "(gpa IS NOT NULL AND gpa < 2.7)";
-        } elseif ($advisingStatus === 'ON_TRACK') {
-            $filters[] = "(gpa IS NOT NULL AND gpa >= 2.7)";
-        }
+    if ($advisingStatus === "REQUIRES_ATTENTION") {
+        $filters[] = "(gpa IS NOT NULL AND gpa < 2.7)";
+    } elseif ($advisingStatus === "ON_TRACK") {
+        $filters[] = "(gpa IS NOT NULL AND gpa >= 2.7)";
     }
 
     if (!empty($filters)) {
-        $sql .= " WHERE " . implode(' AND ', $filters);
+        $sql .= " WHERE " . implode(" AND ", $filters);
     }
-
     $sql .= " ORDER BY academic_year DESC, last_name ASC";
 
     $stmt = $pdo->prepare($sql);
@@ -172,184 +222,201 @@ try {
     $advisees = [];
 }
 
+// Fetch selected student profile and chat info
 $profile = null;
-if ($selectedNim !== '') {
+$chat_history = [];
+$advisedSessions = [];
+$selected_student_user_id = 0;
+
+if ($selectedNim !== "") {
     try {
-        $stmt = $pdo->prepare("SELECT nim, first_name, last_name, study_program, academic_year, gpa, academic_status FROM students WHERE nim = :nim LIMIT 1");
-        $stmt->execute([':nim' => $selectedNim]);
+        $stmt = $pdo->prepare(
+            "SELECT s.*, u.id as student_user_id FROM students s LEFT JOIN users u ON s.user_id = u.id WHERE s.nim = :nim LIMIT 1",
+        );
+        $stmt->execute([":nim" => $selectedNim]);
         $profile = $stmt->fetch();
+
+        if ($profile) {
+            $selected_student_user_id =
+                (int) ($profile["student_user_id"] ?? 0);
+
+            // Chat history (from 'theirs')
+            if ($selected_student_user_id) {
+                $stmt = $pdo->prepare(
+                    "SELECT * FROM chat_messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY created_at ASC",
+                );
+                $stmt->execute([
+                    $lecturerId,
+                    $selected_student_user_id,
+                    $selected_student_user_id,
+                    $lecturerId,
+                ]);
+                $chat_history = $stmt->fetchAll();
+            }
+
+            // Formal sessions (from HEAD)
+            $stmt = $pdo->prepare(
+                "SELECT id, title, content, category, sender, created_at FROM student_notifications WHERE category = 'BIMBINGAN' AND content LIKE :nim_pattern ORDER BY created_at DESC",
+            );
+            $stmt->execute([":nim_pattern" => "NIM:" . $selectedNim . "%"]);
+            $advisedSessions = $stmt->fetchAll();
+        }
     } catch (PDOException $e) {
         $profile = null;
     }
 }
 
+// Global stats (from HEAD)
 $adviseesStats = [
-    'total' => '0',
-    'active' => '0',
-    'final_project' => '0',
-    'graduation_candidates' => '0',
-    'attention' => '0'
+    "total" => "0",
+    "active" => "0",
+    "final_project" => "0",
+    "graduation_candidates" => "0",
+    "attention" => "0",
 ];
-
 try {
     $stmt = $pdo->query("SELECT COUNT(*) AS c FROM students");
-    $adviseesStats['total'] = (string)($stmt->fetch()['c'] ?? 0);
-} catch (PDOException $e) {}
-
-try {
-    $stmt = $pdo->query("SELECT COUNT(*) AS c FROM students WHERE academic_status = 'ON_TRACK'");
-    $adviseesStats['active'] = (string)($stmt->fetch()['c'] ?? 0);
-} catch (PDOException $e) {}
-
-try {
-    $stmt = $pdo->query("SELECT COUNT(*) AS c FROM students WHERE academic_status = 'AT_RISK' AND (gpa IS NULL OR gpa < 2.7)");
-    $adviseesStats['attention'] = (string)($stmt->fetch()['c'] ?? 0);
-} catch (PDOException $e) {}
-
-try {
-    $stmt = $pdo->query("SELECT COUNT(*) AS c FROM students WHERE academic_year >= (YEAR(CURDATE()) - 1)");
-    $adviseesStats['final_project'] = (string)($stmt->fetch()['c'] ?? 0);
-} catch (PDOException $e) {}
-
-$adviseesStats['graduation_candidates'] = $adviseesStats['final_project'];
-
-try {
-    if ($selectedNim !== '') {
-        $stmt = $pdo->prepare("SELECT id, title, content, category, sender, created_at FROM student_notifications WHERE category = 'BIMBINGAN' ORDER BY id DESC LIMIT 20");
-        $stmt->execute();
-        $allSessions = $stmt->fetchAll();
-
-        $sessions = [];
-        foreach ($allSessions as $s) {
-            $content = (string)($s['content'] ?? '');
-            if (strpos($content, 'NIM:' . $selectedNim) === 0) {
-                $sessions[] = $s;
-            } else {
-                $sessions[] = $s;
-            }
-        }
-        $advisedSessions = $sessions;
-    } else {
-        $stmt = $pdo->prepare("SELECT id, title, content, category, sender, created_at FROM student_notifications WHERE category = 'BIMBINGAN' ORDER BY id DESC LIMIT 15");
-        $stmt->execute();
-        $advisedSessions = $stmt->fetchAll();
-    }
+    $adviseesStats["total"] = (string) ($stmt->fetch()["c"] ?? 0);
+    $stmt = $pdo->query(
+        "SELECT COUNT(*) AS c FROM students WHERE academic_status = 'ON_TRACK'",
+    );
+    $adviseesStats["active"] = (string) ($stmt->fetch()["c"] ?? 0);
+    $stmt = $pdo->query(
+        "SELECT COUNT(*) AS c FROM students WHERE academic_status = 'AT_RISK' AND (gpa IS NULL OR gpa < 2.7)",
+    );
+    $adviseesStats["attention"] = (string) ($stmt->fetch()["c"] ?? 0);
+    $stmt = $pdo->query(
+        "SELECT COUNT(*) AS c FROM students WHERE academic_year >= (YEAR(CURDATE()) - 1)",
+    );
+    $adviseesStats["final_project"] = (string) ($stmt->fetch()["c"] ?? 0);
+    $adviseesStats["graduation_candidates"] = $adviseesStats["final_project"];
 } catch (PDOException $e) {
-    $advisedSessions = [];
 }
-
-try {
-    $lowGpaStudents = [];
-    $stmt = $pdo->query("SELECT nim, first_name, last_name, gpa FROM students WHERE gpa IS NOT NULL AND gpa < 2.7 ORDER BY gpa ASC LIMIT 5");
-    $lowGpaStudents = $stmt->fetchAll();
-} catch (PDOException $e) {
-    $lowGpaStudents = [];
-}
-
 ?>
 
 <main class="dashboard-viewport">
     <section class="hero-banner">
         <div class="hero-title">
-            <h1>Academic Advising</h1>
-            <p>Monitoring kemajuan akademik dan sesi bimbingan dosen.</p>
+            <h1>Bimbingan Akademik</h1>
+            <p>Monitoring kemajuan akademik dan komunikasi langsung dengan mahasiswa.</p>
         </div>
         <div class="metrics-row">
-            <div class="metric-card"><span class="metric-label">Total Advisees</span><span class="metric-value"><?= htmlspecialchars($adviseesStats['total']) ?></span></div>
-            <div class="metric-card"><span class="metric-label">Active Advisees</span><span class="metric-value"><?= htmlspecialchars($adviseesStats['active']) ?></span></div>
-            <div class="metric-card"><span class="metric-label">Final Project</span><span class="metric-value"><?= htmlspecialchars($adviseesStats['final_project']) ?></span></div>
-            <div class="metric-card"><span class="metric-label">Candidates</span><span class="metric-value"><?= htmlspecialchars($adviseesStats['graduation_candidates']) ?></span></div>
+            <div class="metric-card"><span class="metric-label">Total Advisees</span><span class="metric-value"><?= htmlspecialchars(
+                $adviseesStats["total"],
+            ) ?></span></div>
+            <div class="metric-card"><span class="metric-label">Active Advisees</span><span class="metric-value"><?= htmlspecialchars(
+                $adviseesStats["active"],
+            ) ?></span></div>
+            <div class="metric-card"><span class="metric-label">Final Project</span><span class="metric-value"><?= htmlspecialchars(
+                $adviseesStats["final_project"],
+            ) ?></span></div>
+            <div class="metric-card"><span class="metric-label">Candidates</span><span class="metric-value"><?= htmlspecialchars(
+                $adviseesStats["graduation_candidates"],
+            ) ?></span></div>
         </div>
     </section>
 
     <div class="split-grid" style="gap: 16px; align-items:start;">
+        <!-- Left Column: Student List -->
         <div class="content-card" style="flex: 1;">
             <div class="card-top">
-                <h3>Advisee List</h3>
-                <span class="action-link" style="cursor:default;">Attention: <?= htmlspecialchars($adviseesStats['attention']) ?></span>
+                <h3>Daftar Mahasiswa</h3>
+                <span class="action-link" style="cursor:default;">Attention: <?= htmlspecialchars(
+                    $adviseesStats["attention"],
+                ) ?></span>
             </div>
 
             <div style="padding: 0 16px; margin-top: -6px;">
                 <form method="get" style="display:grid; gap: 12px;">
-                    <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Search student" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:#ffffff; color:var(--charcoal); font-weight:600; outline:none;" />
+                    <input type="text" name="q" value="<?= htmlspecialchars(
+                        $search,
+                    ) ?>" placeholder="Cari mahasiswa..." style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:#ffffff; color:var(--charcoal); font-weight:600; outline:none;" />
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <label style="display:block;">
-                            <span style="display:block; font-size:0.78rem; font-weight:700; color:var(--charcoal);">Study Program</span>
+                            <span style="display:block; font-size:0.78rem; font-weight:700; color:var(--charcoal);">Program Studi</span>
                             <select name="program" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:#ffffff; color:var(--charcoal); font-weight:700; outline:none;">
-                                <option value="">All</option>
+                                <option value="">Semua</option>
                                 <?php foreach ($programs as $p): ?>
-                                    <option value="<?= htmlspecialchars((string)$p['study_program']) ?>" <?= $program === (string)$p['study_program'] ? 'selected' : '' ?>><?= htmlspecialchars((string)$p['study_program']) ?></option>
+                                    <option value="<?= htmlspecialchars(
+                                        (string) $p["study_program"],
+                                    ) ?>" <?= $program ===
+(string) $p["study_program"]
+    ? "selected"
+    : "" ?>><?= htmlspecialchars((string) $p["study_program"]) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </label>
 
                         <label style="display:block;">
-                            <span style="display:block; font-size:0.78rem; font-weight:700; color:var(--charcoal);">Academic Year</span>
+                            <span style="display:block; font-size:0.78rem; font-weight:700; color:var(--charcoal);">Angkatan</span>
                             <select name="academic_year" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:#ffffff; color:var(--charcoal); font-weight:700; outline:none;">
-                                <option value="">All</option>
+                                <option value="">Semua</option>
                                 <?php foreach ($academicYears as $ay): ?>
-                                    <option value="<?= htmlspecialchars((string)$ay['academic_year']) ?>" <?= $academicYear === (string)$ay['academic_year'] ? 'selected' : '' ?>><?= htmlspecialchars((string)$ay['academic_year']) ?></option>
+                                    <option value="<?= htmlspecialchars(
+                                        (string) $ay["academic_year"],
+                                    ) ?>" <?= $academicYear ===
+(string) $ay["academic_year"]
+    ? "selected"
+    : "" ?>><?= htmlspecialchars((string) $ay["academic_year"]) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </label>
                     </div>
 
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <label style="display:block;">
-                            <span style="display:block; font-size:0.78rem; font-weight:700; color:var(--charcoal);">Academic Status</span>
-                            <select name="academic_status" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:#ffffff; color:var(--charcoal); font-weight:700; outline:none;">
-                                <option value="">All</option>
-                                <option value="ON_TRACK" <?= $academicStatus === 'ON_TRACK' ? 'selected' : '' ?>>On Track</option>
-                                <option value="AT_RISK" <?= $academicStatus === 'AT_RISK' ? 'selected' : '' ?>>At Risk</option>
-                            </select>
-                        </label>
-
-                        <label style="display:block;">
-                            <span style="display:block; font-size:0.78rem; font-weight:700; color:var(--charcoal);">Advising Status</span>
-                            <select name="advising_status" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:#ffffff; color:var(--charcoal); font-weight:700; outline:none;">
-                                <option value="">All</option>
-                                <option value="REQUIRES_ATTENTION" <?= $advisingStatus === 'REQUIRES_ATTENTION' ? 'selected' : '' ?>>Requires Attention</option>
-                                <option value="ON_TRACK" <?= $advisingStatus === 'ON_TRACK' ? 'selected' : '' ?>>On Track</option>
-                            </select>
-                        </label>
-                    </div>
-
-                    <button type="submit" class="trigger-btn btn-blue" style="border:none;">Apply</button>
-                    <a href="advising.php" class="trigger-btn" style="background-color: var(--primary); color:white; text-decoration:none;">Reset</a>
+                    <button type="submit" class="trigger-btn btn-blue" style="border:none;">Terapkan</button>
+                    <a href="advising.php" class="trigger-btn" style="background-color: var(--primary); color:white; text-decoration:none; text-align:center;">Reset</a>
                 </form>
             </div>
 
             <div class="agenda-table-wrapper" style="margin: 14px 16px 16px;">
-                <div class="agenda-table-header" style="grid-template-columns: 140px 1fr 130px;">
-                    <span class="col-head">STUDENT</span>
-                    <span class="col-head">PROGRAM</span>
+                <div class="agenda-table-header" style="grid-template-columns: 140px 1fr 100px;">
+                    <span class="col-head">MAHASISWA</span>
+                    <span class="col-head">PRODI</span>
                     <span class="col-head">STATUS</span>
                 </div>
 
                 <div class="agenda-rows-stack">
                     <?php if (empty($advisees)): ?>
-                        <div class="empty-fallback-text border-box-pad">No advisees found.</div>
+                        <div class="empty-fallback-text border-box-pad">Tidak ada mahasiswa ditemukan.</div>
                     <?php else: ?>
                         <?php foreach ($advisees as $st): ?>
                             <?php
-                                $gpaVal = $st['gpa'] ?? null;
-                                $isAttention = ($gpaVal !== null && (float)$gpaVal < 2.7);
-                                $badgeClass = $isAttention ? 'label-badge red' : 'label-badge';
+                            $gpaVal = $st["gpa"] ?? null;
+                            $isAttention =
+                                $gpaVal !== null && (float) $gpaVal < 2.7;
                             ?>
-                            <div class="agenda-table-row" style="grid-template-columns: 140px 1fr 130px;">
+                            <div class="agenda-table-row" style="grid-template-columns: 140px 1fr 100px; <?= $selectedNim ===
+                            $st["nim"]
+                                ? "background: #f3f4f6;"
+                                : "" ?>">
                                 <div class="col-cell cell-mid-desc">
-                                    <span class="item-main-headline"><?= htmlspecialchars($st['first_name'] . ' ' . $st['last_name']) ?></span>
-                                    <span class="item-sub-clock">NIM <?= htmlspecialchars($st['nim']) ?></span>
-                                    <a href="advising.php?nim=<?= urlencode((string)$st['nim']) ?>" class="action-link" style="display:inline-block; margin-top: 6px;">View</a>
+                                    <span class="item-main-headline"><?= htmlspecialchars(
+                                        $st["first_name"] .
+                                            " " .
+                                            $st["last_name"],
+                                    ) ?></span>
+                                    <span class="item-sub-clock">NIM <?= htmlspecialchars(
+                                        $st["nim"],
+                                    ) ?></span>
+                                    <a href="advising.php?nim=<?= urlencode(
+                                        (string) $st["nim"],
+                                    ) ?>" class="action-link" style="display:inline-block; margin-top: 6px;">Lihat Profil</a>
                                 </div>
                                 <div class="col-cell cell-room-loc">
-                                    <span class="item-main-headline"><?= htmlspecialchars($st['study_program']) ?></span>
-                                    <span class="item-sub-clock"><?= htmlspecialchars($st['academic_year']) ?></span>
+                                    <span class="item-main-headline" style="font-size:0.75rem;"><?= htmlspecialchars(
+                                        $st["study_program"],
+                                    ) ?></span>
+                                    <span class="item-sub-clock"><?= htmlspecialchars(
+                                        $st["academic_year"],
+                                    ) ?></span>
                                 </div>
                                 <div class="col-cell cell-room-loc">
-                                    <span class="item-main-headline"><?= htmlspecialchars((string)($st['academic_status'] ?? '')) ?></span>
-                                    <span class="label-badge red" style="display:inline-flex; margin-top: 6px; opacity: <?= $isAttention ? '1' : '0.65' ?>;"><?= $isAttention ? 'Attention' : 'OK' ?></span>
+                                    <span class="label-badge red" style="display:inline-flex; margin-top: 6px; opacity: <?= $isAttention
+                                        ? "1"
+                                        : "0.4" ?>;"><?= $isAttention
+    ? "Attention"
+    : "OK" ?></span>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -358,144 +425,216 @@ try {
             </div>
         </div>
 
-        <div class="content-card" style="flex: 1;">
-            <div class="card-top">
-                <h3>Advising Sessions</h3>
-                <a href="dashboard.php" class="action-link">Back</a>
-            </div>
+        <!-- Right Column: Chat and Advising -->
+        <div style="flex: 2; display: flex; flex-direction: column; gap: 16px;">
 
-            <div style="padding: 0 16px; margin-top: -6px;">
-                <div class="card-top" style="margin-bottom: 10px;">
-                    <h3 style="font-size:0.88rem;">Student Profile</h3>
-                </div>
-
-                <?php if ($profile === null && $selectedNim === ''): ?>
-                    <div class="empty-fallback-text border-box-pad">Select a student to view advising profile.</div>
-                <?php elseif ($profile === null): ?>
-                    <div class="empty-fallback-text border-box-pad">Student not found.</div>
-                <?php else: ?>
-                    <div class="announcements-feed" style="margin-top: 10px;">
-                        <div class="annc-node">
+            <!-- Student Profile Card (from HEAD) -->
+            <?php if ($profile): ?>
+                <div class="content-card">
+                    <div class="card-top">
+                        <h3>Profil Mahasiswa</h3>
+                        <span class="action-link" style="cursor:default;">NIM: <?= htmlspecialchars(
+                            $profile["nim"],
+                        ) ?></span>
+                    </div>
+                    <div class="announcements-feed" style="padding: 16px;">
+                        <div class="annc-node" style="margin-bottom:0;">
                             <div class="annc-top-line">
                                 <div class="annc-icon-frame blue">
                                     <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                                 </div>
                                 <div class="annc-title-area">
-                                    <h4><?= htmlspecialchars($profile['first_name'] . ' ' . $profile['last_name']) ?></h4>
-                                    <p class="annc-body-text" style="margin:6px 0 0 0;">NIM <?= htmlspecialchars($profile['nim']) ?> · <?= htmlspecialchars($profile['study_program']) ?></p>
+                                    <h4><?= htmlspecialchars(
+                                        $profile["first_name"] .
+                                            " " .
+                                            $profile["last_name"],
+                                    ) ?></h4>
+                                    <p class="annc-body-text" style="margin:6px 0 0 0;"><?= htmlspecialchars(
+                                        $profile["study_program"],
+                                    ) ?> · Angkatan <?= htmlspecialchars(
+     $profile["academic_year"],
+ ) ?></p>
                                 </div>
                             </div>
-                            <div class="annc-body-text" style="margin-top: 8px;">
-                                <span style="font-weight:700; color: var(--charcoal);">Academic Year:</span> <?= htmlspecialchars($profile['academic_year']) ?>
-                                <br />
-                                <span style="font-weight:700; color: var(--charcoal);">GPA:</span> <?= htmlspecialchars((string)($profile['gpa'] ?? '—')) ?>
-                                <br />
-                                <span style="font-weight:700; color: var(--charcoal);">Academic Status:</span> <?= htmlspecialchars((string)($profile['academic_status'] ?? '')) ?>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px;">
+                                <div>
+                                    <span style="font-size:0.75rem; color:#6b7280; display:block;">IPK Kumulatif</span>
+                                    <span style="font-size:1.25rem; font-weight:700; color:var(--primary);"><?= htmlspecialchars(
+                                        (string) ($profile["gpa"] ?? "—"),
+                                    ) ?></span>
+                                </div>
+                                <div>
+                                    <span style="font-size:0.75rem; color:#6b7280; display:block;">Status Akademik</span>
+                                    <span class="label-badge <?= $profile[
+                                        "academic_status"
+                                    ] === "AT_RISK"
+                                        ? "red"
+                                        : "" ?>" style="display:inline-block; margin-top:4px;"><?= htmlspecialchars(
+    (string) ($profile["academic_status"] ?? "NORMAL"),
+) ?></span>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="card-top" style="margin-top: 12px;">
-                        <h3 style="font-size:0.88rem;">Create / Edit Advising Session</h3>
-                        <span class="action-link" style="cursor:default;">NIM: <?= htmlspecialchars((string)$profile['nim']) ?></span>
+                <!-- Chat Room (from 'theirs') -->
+                <div class="content-card" style="display: flex; flex-direction: column; height: 500px;">
+                    <div class="card-top">
+                        <h3>Ruang Konsultasi</h3>
                     </div>
+                    <div style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                        <?php if (empty($chat_history)): ?>
+                            <div style="text-align: center; color: #6b7280; margin-top: 20px;">Belum ada pesan. Mulai percakapan sekarang.</div>
+                        <?php else: ?>
+                            <?php foreach ($chat_history as $msg): ?>
+                                <?php $is_me =
+                                    $msg["sender_id"] == $lecturerId; ?>
+                                <div style="max-width: 75%; padding: 10px 14px; border-radius: 12px; <?= $is_me
+                                    ? "align-self: flex-end; background: #D2232A; color: white;"
+                                    : "align-self: flex-start; background: white; border: 1px solid #e5e7eb; color: #1F2937;" ?>">
+                                    <div style="margin-bottom: 4px;"><?= nl2br(
+                                        htmlspecialchars($msg["message"]),
+                                    ) ?></div>
+                                    <div style="font-size: 0.65rem; text-align: right; <?= $is_me
+                                        ? "color: #ffcccc;"
+                                        : "color: #9ca3af;" ?>">
+                                        <?= htmlspecialchars(
+                                            new DateTime(
+                                                $msg["created_at"],
+                                            )->format("d M H:i"),
+                                        ) ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                    <div style="padding: 16px;">
+                        <form method="POST" style="display: flex; gap: 10px;">
+                            <input type="hidden" name="receiver_id" value="<?= $selected_student_user_id ?>">
+                            <input type="hidden" name="nim" value="<?= htmlspecialchars(
+                                $profile["nim"],
+                            ) ?>">
+                            <input type="text" name="message" required placeholder="Ketik pesan bimbingan..." style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #e5e7eb; outline: none;">
+                            <button type="submit" class="trigger-btn btn-blue" style="border: none; border-radius: 20px; padding: 10px 20px;">Kirim</button>
+                        </form>
+                    </div>
+                </div>
 
-                    <form method="POST" style="padding: 16px;" enctype="multipart/form-data">
+                <!-- Formal Advising Record Form (from HEAD) -->
+                <div class="content-card">
+                    <div class="card-top">
+                        <h3>Catatan Sesi Bimbingan (Formal)</h3>
+                    </div>
+                    <form method="POST" style="padding: 16px;">
                         <input type="hidden" name="action" value="create" />
-                        <input type="hidden" name="nim" value="<?= htmlspecialchars((string)$profile['nim']) ?>" />
+                        <input type="hidden" name="nim" value="<?= htmlspecialchars(
+                            (string) $profile["nim"],
+                        ) ?>" />
 
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                             <label style="display:block;">
-                                <span>Session Date</span>
-                                <input required type="date" name="tanggal" style="width:100%; padding:10px; border-radius:10px; border:1px solid #e5e7eb;" />
+                                <span style="font-size:0.75rem; font-weight:700;">Tanggal Sesi</span>
+                                <input required type="date" name="tanggal" value="<?= date(
+                                    "Y-m-d",
+                                ) ?>" style="width:100%; padding:10px; border-radius:10px; border:1px solid #e5e7eb;" />
                             </label>
                             <label style="display:block;">
-                                <span>Session Topic</span>
-                                <input type="text" name="topik" style="width:100%; padding:10px; border-radius:10px; border:1px solid #e5e7eb;" />
+                                <span style="font-size:0.75rem; font-weight:700;">Topik</span>
+                                <input type="text" name="topik" placeholder="Misal: Progres Skripsi" style="width:100%; padding:10px; border-radius:10px; border:1px solid #e5e7eb;" />
                             </label>
                         </div>
 
                         <div style="margin-top: 12px;">
                             <label style="display:block;">
-                                <span>Session Notes</span>
-                                <textarea name="catatan" rows="4" style="width:100%; padding:10px; border-radius:10px; border:1px solid #e5e7eb;"></textarea>
+                                <span style="font-size:0.75rem; font-weight:700;">Catatan / Rekomendasi</span>
+                                <textarea name="catatan" rows="3" placeholder="Tulis catatan penting sesi bimbingan di sini..." style="width:100%; padding:10px; border-radius:10px; border:1px solid #e5e7eb;"></textarea>
                             </label>
                         </div>
 
-                        <div style="margin-top: 12px;">
-                            <label style="display:block;">
-                                <span>Recommendations</span>
-                                <input type="text" name="rekomendasi" style="width:100%; padding:10px; border-radius:10px; border:1px solid #e5e7eb;" />
-                            </label>
-                        </div>
-
-                        <div style="margin-top: 12px;">
-                            <label style="display:block;">
-                                <span>Follow-Up Actions</span>
-                                <input type="text" name="followup" style="width:100%; padding:10px; border-radius:10px; border:1px solid #e5e7eb;" />
-                            </label>
-                        </div>
-
-                        <?php if ($success): ?>
-                            <div class="empty-fallback-text" style="border:1px solid #3bb273; color:#1f7a4c; margin: 12px 0 0;"><?= htmlspecialchars($success) ?></div>
-                        <?php endif; ?>
-                        <?php if ($error): ?>
-                            <div class="empty-fallback-text" style="border:1px solid #ef4444; color:#b91c1c; margin: 12px 0 0;"><?= htmlspecialchars($error) ?></div>
-                        <?php endif; ?>
-
-                        <div style="margin-top: 16px; display:flex; gap: 10px; flex-wrap:wrap;">
-                            <button type="submit" class="trigger-btn btn-blue" style="border:none;">Save Session</button>
-                            <a href="advising.php" class="trigger-btn btn-red" style="text-decoration:none;">Back</a>
+                        <div style="margin-top: 16px;">
+                            <button type="submit" class="trigger-btn btn-blue" style="border:none; width:100%;">Simpan Catatan Formal</button>
                         </div>
                     </form>
-                <?php endif; ?>
-
-                <div class="card-top" style="margin-top: 14px;">
-                    <h3 style="font-size:0.88rem;">History</h3>
-                    <a href="advising.php" class="action-link">Refresh</a>
                 </div>
 
-                <div class="tasks-vertical-stack" style="margin: 0;">
-                    <?php if (empty($advisedSessions)): ?>
-                        <div class="empty-fallback-text border-box-pad">No advising records.</div>
-                    <?php else: ?>
-                        <?php foreach ($advisedSessions as $s): ?>
-                            <?php
-                                $content = (string)($s['content'] ?? '');
-                                $created = (string)($s['created_at'] ?? '');
-                                $rawParts = explode('|', $content);
-                                $topicPart = '';
+                <!-- History (from HEAD) -->
+                <div class="content-card">
+                    <div class="card-top">
+                        <h3>Riwayat Bimbingan Formal</h3>
+                    </div>
+                    <div class="tasks-vertical-stack" style="padding: 0 16px 16px;">
+                        <?php if (empty($advisedSessions)): ?>
+                            <div class="empty-fallback-text border-box-pad">Belum ada rekaman bimbingan formal.</div>
+                        <?php else: ?>
+                            <?php foreach ($advisedSessions as $s): ?>
+                                <?php
+                                $content = (string) ($s["content"] ?? "");
+                                $created = (string) ($s["created_at"] ?? "");
+                                $rawParts = explode("|", $content);
+                                $topicDisplay = $s["title"] ?? "Bimbingan";
+                                $bodyDisplay = "";
                                 foreach ($rawParts as $p) {
                                     $p = trim($p);
-                                    if (stripos($p, 'NIM:') === 0) continue;
-                                    if ($topicPart === '') {
-                                        $topicPart = $p;
+                                    if (stripos($p, "NIM:") === 0) {
+                                        continue;
+                                    }
+                                    if ($bodyDisplay === "") {
+                                        $bodyDisplay = $p;
                                     } else {
-                                        break;
+                                        $bodyDisplay .= " | " . $p;
                                     }
                                 }
-                            ?>
-                            <div class="task-node">
-                                <div class="task-checkbox-frame" style="border-color: var(--border); background:#fff;">
-                                    <svg viewBox="0 0 24 24" class="check-svg" style="fill: var(--primary);"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                                </div>
-                                <div class="task-node-details">
-                                    <span class="task-node-title"><?= htmlspecialchars($topicPart !== '' ? $topicPart : ($s['title'] ?? 'Advising')) ?></span>
-                                    <span class="task-node-time"><?= htmlspecialchars($created) ?></span>
-                                </div>
-                                <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
-                                    <form method="POST" style="margin:0;">
+                                ?>
+                                <div class="task-node" style="padding: 12px; border-bottom: 1px solid #f3f4f6;">
+                                    <div class="task-node-details">
+                                        <span class="task-node-title" style="font-weight:700;"><?= htmlspecialchars(
+                                            $topicDisplay,
+                                        ) ?></span>
+                                        <p style="font-size:0.85rem; color:#4b5563; margin: 4px 0;"><?= htmlspecialchars(
+                                            $bodyDisplay,
+                                        ) ?></p>
+                                        <span class="task-node-time"><?= htmlspecialchars(
+                                            $created,
+                                        ) ?></span>
+                                    </div>
+                                    <form method="POST" style="margin-left:auto;">
                                         <input type="hidden" name="action" value="delete" />
-                                        <input type="hidden" name="id" value="<?= (int)($s['id'] ?? 0) ?>" />
-                                        <input type="hidden" name="nim" value="<?= htmlspecialchars($selectedNim !== '' ? $selectedNim : '') ?>" />
-                                        <button type="submit" class="trigger-btn btn-red" style="border:none; padding:8px 12px;">Delete</button>
+                                        <input type="hidden" name="id" value="<?= (int) ($s[
+                                            "id"
+                                        ] ?? 0) ?>" />
+                                        <input type="hidden" name="nim" value="<?= htmlspecialchars(
+                                            $selectedNim,
+                                        ) ?>" />
+                                        <button type="submit" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.75rem;">Hapus</button>
                                     </form>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
+
+            <?php else: ?>
+                <!-- No Student Selected -->
+                <div class="content-card">
+                    <div style="padding: 40px; text-align: center; color: #6b7280;">
+                        <svg viewBox="0 0 24 24" style="width: 48px; height: 48px; fill: #d1d5db; margin-bottom: 16px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                        <p>Silakan pilih mahasiswa dari daftar di sebelah kiri untuk melihat profil dan memulai bimbingan.</p>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($success): ?>
+                <div style="background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 12px; border-radius: 8px;"><?= htmlspecialchars(
+                    $success,
+                ) ?></div>
+            <?php endif; ?>
+            <?php if ($error): ?>
+                <div style="background: #fef2f2; border: 1px solid #ef4444; color: #991b1b; padding: 12px; border-radius: 8px;"><?= htmlspecialchars(
+                    $error,
+                ) ?></div>
+            <?php endif; ?>
+
         </div>
     </div>
 </main>
@@ -503,5 +642,3 @@ try {
 </div>
 </body>
 </html>
-
-
