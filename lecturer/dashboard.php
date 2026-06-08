@@ -1,27 +1,89 @@
 <?php
-// Dashboard inner content only. _layout.php outputs full HTML shell.
-
-// Dashboard-only queries (layout already loads announcements + notifications + identity)
 $userId = (int)($_SESSION['user_id'] ?? 0);
+
+$lecturer_name = '';
+$nip = '';
+$expertise = '';
+$academic_year = '';
+
+try {
+    $stmt = $pdo->prepare("SELECT nip, first_name, last_name, degree, expertise, birth_date FROM lecturers WHERE user_id = :user_id LIMIT 1");
+    $stmt->execute([':user_id' => $userId]);
+    $lecturer = $stmt->fetch();
+    if ($lecturer) {
+        $lecturer_name = (string)($lecturer['first_name'] ?? '') . ' ' . (string)($lecturer['last_name'] ?? '');
+        $nip = (string)($lecturer['nip'] ?? '');
+        $expertise = (string)($lecturer['expertise'] ?? '');
+    }
+} catch (PDOException $e) {}
+
+$cohort = (int)date('Y');
+$academic_year = $cohort . '/' . ($cohort + 1);
 
 $current_month = date('F Y');
 
-$tasks = [];
+$quick_tasks_count = 0;
+$recent_activities = [];
+
 try {
-    $stmt = $pdo->prepare("SELECT id, name, deadline_text, is_alert, is_completed FROM active_tasks WHERE user_id = :user_id ORDER BY id ASC");
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS c FROM lecturer_recent_activities WHERE user_id = :user_id");
     $stmt->execute([':user_id' => $userId]);
-    $tasks = $stmt->fetchAll();
+    $row = $stmt->fetch();
+    $quick_tasks_count = (int)($row['c'] ?? 0);
 } catch (PDOException $e) {}
 
-// Use jadwal as agenda for lecturer dashboard
 $agenda = [];
 try {
-    $stmt = $pdo->query("SELECT tanggal, nama_mata_kuliah AS title, CONCAT(jam_mulai, '–', jam_selesai) AS time_range, ruangan AS location, CASE WHEN DAY(tanggal)=DAY(CURDATE()) THEN 'red' WHEN tanggal >= CURDATE() THEN 'blue' ELSE 'coral' END AS dot_color FROM jadwal ORDER BY tanggal ASC LIMIT 7");
+    $stmt = $pdo->prepare("SELECT tanggal, nama_mata_kuliah AS title, CONCAT(jam_mulai, '–', jam_selesai) AS time_range, ruangan AS location, CASE WHEN DATE(tanggal)=CURDATE() THEN 'red' WHEN DATE(tanggal) >= CURDATE() THEN 'blue' ELSE 'coral' END AS dot_color, CONCAT(DAY(tanggal),' ', MONTH(tanggal)) AS date_badge FROM jadwal WHERE user_id = :user_id OR 1=1 ORDER BY tanggal ASC LIMIT 7");
+    $stmt->execute([':user_id' => $userId]);
     $agenda = $stmt->fetchAll();
+} catch (PDOException $e) {
+    try {
+        $stmt = $pdo->query("SELECT tanggal, nama_mata_kuliah AS title, CONCAT(jam_mulai, '–', jam_selesai) AS time_range, ruangan AS location, CASE WHEN DATE(tanggal)=CURDATE() THEN 'red' WHEN DATE(tanggal) >= CURDATE() THEN 'blue' ELSE 'coral' END AS dot_color, CONCAT(DAY(tanggal),' ', MONTH(tanggal)) AS date_badge FROM jadwal ORDER BY tanggal ASC LIMIT 7");
+        $agenda = $stmt->fetchAll();
+    } catch (PDOException $e2) {}
+}
+
+$announcements = [];
+try {
+    $stmt = $pdo->query("SELECT type, badge_class, date_text, title, content, author FROM announcements ORDER BY id DESC");
+    $announcements = $stmt->fetchAll();
 } catch (PDOException $e) {}
 
-// Stats placeholders for lecturer dashboard
-$stats = ['sks_ditempuh' => '—', 'ipk_kumulatif' => '—', 'ip_semester' => '—', 'sks_semester' => '—'];
+$notifications = [];
+$unread_count = 0;
+try {
+    $stmt = $pdo->prepare("SELECT id, title, content, category, sender, created_at FROM student_notifications ORDER BY id DESC LIMIT 5");
+    $stmt->execute();
+    $notifications = $stmt->fetchAll();
+    $unread_count = 0;
+} catch (PDOException $e) {
+    $notifications = [];
+    $unread_count = 0;
+}
+
+$lecturer_stats = ['total_courses_taught' => '—', 'total_students' => '—', 'attendance_sessions' => '—', 'academic_advisees' => '—'];
+try {
+    $stmt = $pdo->prepare("SELECT total_courses_taught, total_students, attendance_sessions, academic_advisees FROM lecturer_stats WHERE user_id = :user_id LIMIT 1");
+    $stmt->execute([':user_id' => $userId]);
+    $s = $stmt->fetch();
+    if ($s) {
+        $lecturer_stats = [
+            'total_courses_taught' => (string)($s['total_courses_taught'] ?? '—'),
+            'total_students' => (string)($s['total_students'] ?? '—'),
+            'attendance_sessions' => (string)($s['attendance_sessions'] ?? '—'),
+            'academic_advisees' => (string)($s['academic_advisees'] ?? '—'),
+        ];
+    }
+} catch (PDOException $e) {}
+
+$initials = 'D';
+if (!empty($lecturer_name)) {
+    $name_array = preg_split('/\s+/', trim($lecturer_name));
+    $initials = strtoupper(substr($name_array[0] ?? '', 0, 1) . (substr($name_array[1] ?? '', 0, 1)));
+    if ($initials === '') $initials = 'D';
+}
+
 ?>
 
 
@@ -55,10 +117,10 @@ $stats = ['sks_ditempuh' => '—', 'ipk_kumulatif' => '—', 'ip_semester' => '�
         <nav class="sidebar-menu">
             <div class="menu-category">MAIN MENU</div>
             <a href="dashboard.php" class="menu-item active">
-                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> BERANDA
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Dashboard
             </a>
             <a href="profile.php" class="menu-item">
-                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> PROFIL
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg> Profile
             </a>
             
             <div class="menu-category-toggle" onclick="toggleSubmenu(this)">
@@ -70,43 +132,29 @@ $stats = ['sks_ditempuh' => '—', 'ipk_kumulatif' => '—', 'ip_semester' => '�
                 <a href="announcements.php" class="sub-menu-link">
                     <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1.5 9c-.83 0-1.5-.67-1.5-1.5S17.67 8 18.5 8s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Pengumuman <span class="nav-badge"><?= count($announcements) ?></span>
                 </a>
-                <a href="news.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> Berita
-                </a>
-                <a href="events.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg> Acara
-                </a>
+
             </div>
 
             <div class="menu-category-toggle expanded" onclick="toggleSubmenu(this)">
                 <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
-                <span>PERKULIAHAN</span>
+                <span>Information Center</span>
                 <svg class="arrow down" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
             </div>
             <div class="submenu-items" style="display: flex;">
-                <a href="jadwal.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg> Jadwal Mengajar
+                <a href="schedule.php" class="sub-menu-link">
+                    <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg> Teaching Schedule
                 </a>
-                <a href="krs.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2z"/></svg> KRS
+                <a href="attendance.php" class="sub-menu-link">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Attendance
                 </a>
-                <a href="khs.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1 2 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg> KHS
+                <a href="grading.php" class="sub-menu-link">
+                    <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1 2 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg> Grade Management
                 </a>
-                <a href="presensi.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Presensi
+                <a href="advising.php" class="sub-menu-link active-sub">
+                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Academic Advising
                 </a>
-                <a href="tugas.php" class="sub-menu-link active-sub">
-                    <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-2 16H8v-2h4v2zm3-4H8v-2h7v2zm0-4H8V8h7v2z"/></svg> Tugas <span class="nav-badge"><?= count(array_filter($tasks, function($t) { return !$t['is_completed']; })) ?></span>
-                </a>
-                <a href="bimbingan.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Mahasiswa Bimbingan
-                </a>
-                <a href="kartu-mahasiswa.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M21 4H3c-1.11 0-2 .89-2 2v12c0 1.1.89 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1.5 3c.83 0 1.5.67 1.5 1.5S20.33 10 19.5 10 18 9.33 18 8.5 18.67 7 19.5 7zM6 15H4v-2h2v2zm0-4H4V9h2v2zm14 4H8v-2h12v2zm0-4H8V9h12v2z"/></svg> Kartu Mahasiswa
-                </a>
-                <a href="transkrip.php" class="sub-menu-link">
-                    <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Transkrip
+                <a href="materials.php" class="sub-menu-link">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 15l-4-4 1.41-1.41L12 15.17l6.59-6.59L20 10l-8 8z"/></svg> Course Materials
                 </a>
             </div>
 
@@ -196,26 +244,8 @@ $stats = ['sks_ditempuh' => '—', 'ipk_kumulatif' => '—', 'ip_semester' => '�
         <main class="dashboard-viewport">
             <section class="hero-banner">
                 <div class="hero-title">
-                    <h1>Halo, <?= htmlspecialchars(explode(' ', $lecturer_name ?: 'Budi')[0]) ?>! 👋</h1>
-                    <p><?= htmlspecialchars($expertise ?: 'Teknik Informatika') ?> · Semester 6 · TA <?= htmlspecialchars($academic_year) ?></p>
-                </div>
-                <div class="metrics-row">
-                    <div class="metric-card">
-                        <span class="metric-label">MATA KULIAH</span>
-                        <span class="metric-value"><?= htmlspecialchars($stats['sks_ditempuh']) ?></span>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-label">MAHASISWA</span>
-                        <span class="metric-value"><?= htmlspecialchars($stats['ipk_kumulatif']) ?></span>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-label">TUGAS AKTIF</span>
-                        <span class="metric-value"><?= htmlspecialchars($stats['ip_semester']) ?></span>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-label">KELAS HARI INI</span>
-                        <span class="metric-value"><?= htmlspecialchars($stats['sks_semester']) ?></span>
-                    </div>
+                    <h1>Halo, <?= htmlspecialchars(explode(' ', $lecturer_name ?: 'Dosen')[0]) ?>! 👋</h1>
+                    <p><?= htmlspecialchars($nip ?: '-') ?> · <?= htmlspecialchars($expertise ?: 'Keahlian') ?> · TA <?= htmlspecialchars($academic_year) ?></p>
                 </div>
             </section>
 
@@ -227,40 +257,28 @@ $stats = ['sks_ditempuh' => '—', 'ipk_kumulatif' => '—', 'ip_semester' => '�
                     </div>
                     <div class="quick-actions-box flex-stretch-actions">
                         <div class="action-node">
-                            <div class="action-node-icon absensi">
-                                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                            </div>
-                            <span>Absensi</span>
-                        </div>
-                        <div class="action-node">
-                            <div class="action-node-icon k-studi">
-                                <svg viewBox="0 0 24 24"><path d="M21 4H3c-1.11 0-2 .89-2 2v12c0 1.1.89 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1.5 3c.83 0 1.5.67 1.5 1.5S20.33 10 19.5 10 18 9.33 18 8.5 18.67 7 19.5 7zM6 15H4v-2h2v2zm0-4H4V9h2v2zm14 4H8v-2h12v2zm0-4H8V9h12v2z"/></svg>
-                            </div>
-                            <span>Kartu Studi</span>
-                        </div>
-                        <div class="action-node">
-                            <div class="action-node-icon transkrip">
-                                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                            </div>
-                            <span>Transkrip</span>
-                        </div>
-                        <div class="action-node">
                             <div class="action-node-icon jadwal">
                                 <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
                             </div>
-                            <span>Jadwal</span>
+                            <span>Teaching Schedule</span>
                         </div>
                         <div class="action-node">
-                            <div class="action-node-icon krs">
+                            <div class="action-node-icon absensi">
+                                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            </div>
+                            <span>Attendance Management</span>
+                        </div>
+                        <div class="action-node">
+                            <div class="action-node-icon transkrip">
                                 <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1 2 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
                             </div>
-                            <span>Kelola Nilai</span>
+                            <span>Grade Management</span>
                         </div>
                         <div class="action-node">
                             <div class="action-node-icon bimbingan">
                                 <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
                             </div>
-                            <span>Mahasiswa Bimbingan</span>
+                            <span>Academic Advising Students</span>
                         </div>
                     </div>
                     <div class="card-action-triggers">
@@ -271,7 +289,7 @@ $stats = ['sks_ditempuh' => '—', 'ipk_kumulatif' => '—', 'ip_semester' => '�
 
                 <div class="content-card">
                     <div class="card-top">
-                        <h3>Pengumuman</h3>
+                        <h3>Announcements Board</h3>
                         <a href="#" class="action-link">Lihat semua →</a>
                     </div>
                     <div class="announcements-feed">

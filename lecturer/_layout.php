@@ -1,35 +1,30 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "_lib.php";
 
-if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "lecturer") {
-    header("Location: ../login.php");
-    exit();
-}
+lecturer_require_role();
 
 $user_id = (int)($_SESSION["user_id"] ?? 0);
 $lecturer_name = '';
 $nip = '';
 $expertise = '';
-$cohort = (int)date('Y');
 
 try {
     $stmt = $pdo->prepare("SELECT nip, first_name, last_name, degree, expertise, birth_date FROM lecturers WHERE user_id = :user_id LIMIT 1");
     $stmt->execute([':user_id' => $user_id]);
     $lecturer = $stmt->fetch();
     if ($lecturer) {
-        $lecturer_name = $lecturer['first_name'] . ' ' . $lecturer['last_name'];
-        $nip = $lecturer['nip'];
-        $expertise = $lecturer['expertise'];
+        $lecturer_name = (string)($lecturer['first_name'] ?? '') . ' ' . (string)($lecturer['last_name'] ?? '');
+        $nip = (string)($lecturer['nip'] ?? '');
+        $expertise = (string)($lecturer['expertise'] ?? '');
     }
-} catch (PDOException $e) {
-    // ignore
-}
+} catch (PDOException $e) {}
 
 $initials = 'BS';
 if (!empty($lecturer_name)) {
     $name_array = preg_split('/\s+/', trim($lecturer_name));
-    $initials = strtoupper(substr($name_array[0] ?? '', 0, 1) . (substr($name_array[1] ?? '', 0, 1)));
+    $initials = strtoupper(substr((string)($name_array[0] ?? ''), 0, 1) . (substr((string)($name_array[1] ?? ''), 0, 1)));
     if ($initials === '') $initials = 'BS';
 }
 
@@ -37,26 +32,19 @@ $announcements = [];
 try {
     $stmt = $pdo->query("SELECT type, badge_class, date_text, title, content, author FROM announcements ORDER BY id DESC");
     $announcements = $stmt->fetchAll();
-} catch (PDOException $e) {
-}
+} catch (PDOException $e) {}
 
 $notifications = [];
 $unread_count = 0;
 try {
-    // Match database.sql structure for student_notifications:
-    // id, title, content, category, sender, created_at (no user_id/text_content/time_ago/is_read/icon_symbol)
-    // We'll still show latest announcements for the lecturer screen.
     $stmt = $pdo->prepare("SELECT id, title, content, category, sender, created_at FROM student_notifications ORDER BY id DESC LIMIT 5");
     $stmt->execute();
     $notifications = $stmt->fetchAll();
-
-    // No is_read field in schema; keep badge hidden unless you later add read-tracking.
     $unread_count = 0;
 } catch (PDOException $e) {
     $notifications = [];
     $unread_count = 0;
 }
-
 
 $activePage = basename($_SERVER['PHP_SELF']);
 function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
@@ -227,9 +215,10 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
     </header>
 
 <?php
-// the page content will be echoed by pages using this layout
 ?>
 
 <div class="dashboard-body">
+
+
 
 
