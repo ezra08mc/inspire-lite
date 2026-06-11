@@ -377,6 +377,10 @@ INSERT INTO `users` VALUES
 (1,'22110310045','$2y$12$jI8cVEremxEcYM8vvQvB6unNzY.mCyYmIoNqramCSl3OOjG4l7XMO','student','2026-05-23 19:39:28');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+-- To use the admin account manager, create at least one `admin` user in the `users` table
+-- with a valid bcrypt password hash before logging in.
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

@@ -3,7 +3,7 @@
 ```mermaid
 flowchart LR
     Student[Student]
-    Admin[Admin / Lecturer]
+    Admin[Admin / Account Manager]
 
     Login((Login))
     Dashboard((View Dashboard))
@@ -30,5 +30,5 @@ flowchart LR
 ## Short Description
 
 - **Student** logs in, views the dashboard, manages tasks, and logs out.
-- **Admin / Lecturer** is shown only as a generic report actor if your lecturer wants a multi-user diagram.
-- For this project implementation, the application focus is the student task tracker.
+- **Admin / Account Manager** creates, edits, resets, and removes user accounts.
+- For this project implementation, the application focus is the student task tracker plus account management.
