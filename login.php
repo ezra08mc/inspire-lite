@@ -85,7 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 <button type="submit" class="btn-signin">LOGIN</button>
             </form>
-            <a href="#" class="forgot-password-link">Lupa Password</a>
+            <a href="./members.php" class="forgot-password-link">Lihat Anggota Kelompok</a>
         </div>
     </div>
 

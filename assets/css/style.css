@@ -257,4 +257,58 @@
         .forgot-password-link { display: inline-block; margin-top: 18px; color: rgba(255, 255, 255, 0.6); text-decoration: none; font-size: 0.8rem; font-weight: 600; }
         .forgot-password-link:hover { color: #ffffff; text-decoration: underline; }
         .form-footer { width: 100%; text-align: center; padding: 16px; color: rgba(255, 255, 255, 0.4); font-size: 0.75rem; z-index: 20; }
+        .members-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .members-shell {
+            width: 100%;
+            max-width: 760px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            padding: 32px;
+            color: #fff;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
+        }
+        .members-shell h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .members-shell p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 24px;
+        }
+        .member-list {
+            display: grid;
+            gap: 14px;
+        }
+        .member-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .member-name {
+            font-weight: 700;
+        }
+        .member-id {
+            color: rgba(255, 255, 255, 0.82);
+            font-weight: 600;
+        }
+        .back-link {
+            display: inline-flex;
+            margin-top: 24px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+        }
     
