@@ -35,12 +35,13 @@ try {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="dashboard-page">
     <aside class="sidebar" id="sidebarMenu">
         <div class="sidebar-brand">
-            <svg class="sidebar-logo-svg" viewBox="0 0 24 24"><path d="M12 2L1 7l11 5 9-4.5V14h2V7L12 2zM5 11.18v3L12 18l7-3.82v-3L12 14l-7-2.82z"/></svg>
+            <svg class="sidebar-logo-svg" viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: currentColor; min-width: 32px;"><path d="M12 2L1 7l11 5 9-4.5V14h2V7L12 2zM5 11.18v3L12 18l7-3.82v-3L12 14l-7-2.82z"/></svg>
             <h2>INSPIRE LITE</h2>
         </div>
         <nav class="sidebar-menu">
