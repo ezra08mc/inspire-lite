@@ -93,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <div class="login-card">
 
         <div class="brand-container">
-            <h1>📚 Task Tracker</h1>
+            <h1>Inspire-Lite</h1>
             <p>Manage Your Academic Tasks Easily</p>
         </div>
 
@@ -144,7 +144,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </div>
 
 <footer class="form-footer">
-    <p>© 2026 Task Tracker System</p>
+    <p>© 2026 Inspire-Lite</p>
 </footer>
 
 </body>
