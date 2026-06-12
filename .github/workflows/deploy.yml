@@ -17,5 +17,6 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           cd /var/www/html/inspire-lite/dev
-          git checkout ReStructure    
-          git pull origin ReStructure
+          git fetch origin
+          git checkout ReStructure || git checkout -b ReStructure origin/ReStructure
+          git pull origin ReStructure --ff-only || (git fetch origin && git reset --hard origin/ReStructure)
