@@ -80,13 +80,67 @@ try {
                 </div>
             </section>
 
-            <div class="content-card">
-                <div class="card-top">
-                    <h3>Quick Actions</h3>
-                    <a href="users/manage.php" class="action-link">Open user manager</a>
+            <div class="split-grid">
+
+    <div class="content-card">
+        <div class="card-top">
+            <h3>Quick Actions</h3>
+        </div>
+
+        <div class="quick-actions-box">
+
+            <a href="users/manage.php" class="action-node">
+                <div class="action-node-icon">
+                    👥
                 </div>
-                <p class="empty-fallback-text border-box-pad">Use the user manager to add student accounts, update roles, reset passwords, or remove inactive users.</p>
+                <span>Manage Users</span>
+            </a>
+
+            <a href="users/add.php" class="action-node">
+                <div class="action-node-icon">
+                    ➕
+                </div>
+                <span>Add User</span>
+            </a>
+
+            <a href="../logout.php" class="action-node">
+                <div class="action-node-icon">
+                    🚪
+                </div>
+                <span>Logout</span>
+            </a>
+
+        </div>
+    </div>
+
+    <div class="content-card">
+
+        <div class="card-top">
+            <h3>System Information</h3>
+        </div>
+
+        <div class="announcements-feed">
+
+            <div class="annc-node">
+                <h4>Total Users</h4>
+                <p><?= $counts["users"] ?> accounts registered.</p>
             </div>
+
+            <div class="annc-node">
+                <h4>Student Accounts</h4>
+                <p><?= $counts["students"] ?> student accounts available.</p>
+            </div>
+
+            <div class="annc-node">
+                <h4>Administrator Accounts</h4>
+                <p><?= $counts["admins"] ?> admin accounts available.</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
         </main>
     </div>
 </body>
