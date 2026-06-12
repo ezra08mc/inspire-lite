@@ -1,5 +1,4 @@
 <div align="center">
-  
   <h1>INSPIRE Lite</h1>
   <h3><b>A Minimalist Campus Management Information System</b></h3>  
   <p>A native, modern academic web portal engineered for high performance and clean data routing.</p>
