@@ -40,7 +40,7 @@ The application uses a `tasks` table with the following fields:
 - `created_at`
 
 ## Structure
-
+```
 task-tracker/
 │
 ├── config/
