@@ -41,7 +41,7 @@ The application uses a `tasks` table with the following fields:
 
 ## Structure
 ```
-task-tracker/
+Inspire-Lite/
 │
 ├── config/
 │   └── database.php
@@ -53,9 +53,11 @@ task-tracker/
 │       └── script.js
 │
 ├── admin/
-│   ├── Dashboard
-│   ├── Manage Users
-│   └── Logout
+│   ├── dashboard.php
+│   ├── tasks.php
+│   ├── add_task.php
+│   ├── edit_task.php
+│   └── delete_task.php
 │
 ├── student/
 │   ├── dashboard.php
