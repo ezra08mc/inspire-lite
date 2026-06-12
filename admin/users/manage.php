@@ -45,8 +45,6 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?= $user["created_at"] ?></td>
 
                     <td>
-                    <td>
-
                         <a href="edit.php?id=<?= $user['id'] ?>" class="btn-edit">
                             Edit
                         </a>
@@ -55,8 +53,6 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             onclick="return confirm('Delete this user?')">
                             Delete
                         </a>
-
-                    </td>
                     </td>
                 </tr>
             <?php endforeach; ?>
