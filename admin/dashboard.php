@@ -48,7 +48,35 @@ $page_title = "Admin Dashboard - INSPIRE Lite";
 $current_page = "dashboard";
 
 include $base_path . "includes/header.php";
-include $base_path . "includes/sidebar.php";
+?>
+
+<style>
+    .sidebar-brand svg, 
+    .sidebar-logo-svg,
+    #sidebarMenu svg {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        min-height: 32px !important;
+        max-width: 32px !important;
+        max-height: 32px !important;
+        display: inline-block !important;
+    }
+
+    .dashboard-page, body {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: hidden;
+    }
+    
+    .main-content {
+        flex: 1 !important;
+        width: calc(100% - 260px) !important;
+    }
+</style>
+
+<?php 
+include $base_path . "includes/sidebar.php"; 
 ?>
 <div class="main-content">
     <?php include $base_path . "includes/topbar.php"; ?>
