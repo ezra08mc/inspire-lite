@@ -7,90 +7,87 @@ if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
     exit();
 }
 
-$username = $_SESSION["username"] ?? "Admin";
-$initials = strtoupper(substr($username, 0, 2));
-
-$counts = [
-    "users" => 0,
-    "admins" => 0,
-    "students" => 0,
-    "tasks" => 0,
-];
+$user_id = $_SESSION["user_id"];
+$admin_name = "";
+$admin_id = $_SESSION["username"];
 
 try {
-    $counts["users"] = (int)$pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-    $counts["admins"] = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin'")->fetchColumn();
-    $counts["students"] = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE role = 'student'")->fetchColumn();
-    $counts["tasks"] = (int)$pdo->query("SELECT COUNT(*) FROM tasks")->fetchColumn();
-} catch (PDOException $e) {
-    error_log($e->getMessage());
+    $stmt = $pdo->prepare("SELECT admin_id, first_name, last_name FROM admins WHERE user_id = :user_id LIMIT 1");
+    $stmt->execute([':user_id' => $user_id]);
+    $admin_data = $stmt->fetch();
+    if ($admin_data) {
+        $admin_name = $admin_data['first_name'] . ' ' . $admin_data['last_name'];
+        $admin_id = $admin_data['admin_id'];
+    }
+} catch (PDOException $e) {}
+
+$stats = ['total_students' => 0, 'total_lecturers' => 0, 'total_staff' => 0, 'total_announcements' => 0];
+try {
+    $stats['total_students'] = $pdo->query("SELECT COUNT(*) FROM students")->fetchColumn();
+    $stats['total_lecturers'] = $pdo->query("SELECT COUNT(*) FROM lecturers")->fetchColumn();
+    $stats['total_staff'] = $pdo->query("SELECT COUNT(*) FROM staff")->fetchColumn();
+    $stats['total_announcements'] = $pdo->query("SELECT COUNT(*) FROM announcements")->fetchColumn();
+} catch (PDOException $e) {}
+
+$announcements = [];
+try {
+    $stmt = $pdo->query("SELECT type, badge_class, date_text, title, content, author FROM announcements ORDER BY id DESC LIMIT 3");
+    $announcements = $stmt->fetchAll();
+} catch (PDOException $e) {}
+
+$initials = "AD";
+if (!empty($admin_name)) {
+    $parts = explode(" ", $admin_name);
+    $initials = strtoupper(substr($parts[0], 0, 1) . (isset($parts[1]) ? substr($parts[1], 0, 1) : ""));
 }
+$display_name = $admin_name ?: "Administrator";
+$unread_count = 0;
+
+$base_path = "../";
+$page_title = "Admin Dashboard - INSPIRE Lite";
+$current_page = "dashboard";
+
+include $base_path . "includes/header.php";
+include $base_path . "includes/sidebar.php";
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Student Task Reminder</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body class="dashboard-page">
-    <aside class="sidebar" id="sidebarMenu">
-        <div class="sidebar-brand">
-            <svg class="sidebar-logo-svg" viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: currentColor; min-width: 32px;"><path d="M12 2L1 7l11 5 9-4.5V14h2V7L12 2zM5 11.18v3L12 18l7-3.82v-3L12 14l-7-2.82z"/></svg>
-            <h2>INSPIRE LITE</h2>
-        </div>
-        <nav class="sidebar-menu">
-            <div class="menu-category">ACCOUNT MANAGER</div>
-            <a href="dashboard.php" class="menu-item active"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> DASHBOARD</a>
-            <a href="users/manage.php" class="menu-item"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> MANAGE USERS</a>
-            <a href="../team-member.php" class="menu-item"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> TEAM MEMBERS</a>
-            <a href="../logout.php" class="menu-item"><svg viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg> LOGOUT</a>
-        </nav>
-    </aside>
-
-    <div class="main-content">
-        <header class="navbar">
-            <button class="menu-toggle-hamburger" id="hamburgerBtn"><svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg></button>
-            <div class="page-title-header"><h1>Admin Dashboard</h1></div>
-            <div class="user-panel">
-                <div class="profile-clickable-zone">
-                    <div class="avatar-circle"><?= htmlspecialchars($initials) ?></div>
-                    <div class="user-info-text pc-only">
-                        <p class="user-name"><?= htmlspecialchars($username) ?></p>
-                        <p class="user-role">Admin</p>
-                    </div>
-                </div>
+<div class="main-content">
+    <?php include $base_path . "includes/topbar.php"; ?>
+    <main class="dashboard-viewport" style="padding: 24px;">
+        <section class="hero-banner">
+            <div class="hero-title">
+                <h1>Halo, <?= htmlspecialchars(explode(' ', $display_name)[0]) ?>!</h1>
+                <p>Administrator · Panel Kontrol Sistem</p>
             </div>
-        </header>
+            <div class="metrics-row">
+                <div class="metric-card"><span class="metric-label">TOTAL MAHASISWA</span><span class="metric-value"><?= $stats['total_students'] ?></span></div>
+                <div class="metric-card"><span class="metric-label">TOTAL DOSEN</span><span class="metric-value"><?= $stats['total_lecturers'] ?></span></div>
+                <div class="metric-card"><span class="metric-label">TOTAL STAF</span><span class="metric-value"><?= $stats['total_staff'] ?></span></div>
+                <div class="metric-card"><span class="metric-label">PENGUMUMAN</span><span class="metric-value"><?= $stats['total_announcements'] ?></span></div>
+            </div>
+        </section>
 
-        <main class="dashboard-viewport">
-            <section class="hero-banner">
-                <div class="hero-title">
-                    <h1>Admin Account Manager</h1>
-                    <p>Manage user accounts and keep the student task system organized.</p>
-                </div>
-                <div class="metrics-row">
-                    <div class="metric-card"><span class="metric-label">USERS</span><span class="metric-value"><?= htmlspecialchars((string)$counts["users"]) ?></span></div>
-                    <div class="metric-card"><span class="metric-label">ADMINS</span><span class="metric-value"><?= htmlspecialchars((string)$counts["admins"]) ?></span></div>
-                    <div class="metric-card"><span class="metric-label">STUDENTS</span><span class="metric-value"><?= htmlspecialchars((string)$counts["students"]) ?></span></div>
-                    <div class="metric-card"><span class="metric-label">TASKS</span><span class="metric-value"><?= htmlspecialchars((string)$counts["tasks"]) ?></span></div>
-                </div>
-            </section>
-
+        <div class="split-grid flex-equal-align">
             <div class="content-card">
-                <div class="card-top">
-                    <h3>Quick Actions</h3>
-                    <a href="users/manage.php" class="action-link">Open user manager</a>
+                <div class="card-top"><h3>Aksi Cepat</h3></div>
+                <div class="quick-actions-box flex-stretch-actions">
+                    <a href="users/manage.php" class="action-node"><div class="action-node-icon absensi"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div><span>Kelola Pengguna</span></a>
+                    <a href="users/provisions.php" class="action-node"><div class="action-node-icon k-studi"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div><span>Penyediaan Akun</span></a>
+                    <a href="announcements.php" class="action-node"><div class="action-node-icon krs"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><span>Pengumuman</span></a>
+                    <a href="settings/calendar.php" class="action-node"><div class="action-node-icon jadwal"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg></div><span>Kalender</span></a>
                 </div>
-                <p class="empty-fallback-text border-box-pad">Use the user manager to add student accounts, update roles, reset passwords, or remove inactive users.</p>
             </div>
-        </main>
-    </div>
-    <script src="../assets/js/main.js"></script>
-</body>
-</html>
+            <div class="content-card">
+                <div class="card-top"><h3>Pengumuman Terbaru</h3><a href="announcements.php" class="view-all-link">Kelola</a></div>
+                <div class="announcement-stack">
+                    <?php foreach ($announcements as $a): ?>
+                        <div class="announcement-node">
+                            <div class="node-badge <?= htmlspecialchars($a["badge_class"]) ?>"><?= htmlspecialchars($a["type"]) ?></div>
+                            <div class="node-content"><p class="node-date"><?= htmlspecialchars($a["date_text"]) ?></p><p class="node-title"><?= htmlspecialchars($a["title"]) ?></p></div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<?php include $base_path . "includes/footer.php"; ?>
