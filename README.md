@@ -38,3 +38,37 @@ The application uses a `tasks` table with the following fields:
 - `deadline`
 - `status`
 - `created_at`
+
+## Structure
+
+task-tracker/
+│
+├── config/
+│   └── database.php
+│
+├── assets/
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── script.js
+│
+├── admin/
+│   ├── Dashboard
+│   ├── Manage Users
+│   └── Logout
+│
+├── student/
+│   ├── dashboard.php
+│   ├── tasks.php
+│   ├── add_task.php
+│   ├── edit_task.php
+│   └── update_status.php
+│
+├── includes/
+│   ├── header.php
+│   ├── footer.php
+│   └── auth.php
+│
+├── login.php
+├── logout.php
+└── database.sql
