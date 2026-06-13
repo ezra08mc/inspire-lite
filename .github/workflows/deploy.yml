@@ -1,8 +1,8 @@
-name: CD - Deploy to Sentinel Server (Active Dev Phase)
+name: CD - Deploy to Server
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ active ]
 
 jobs:
   deploy:
