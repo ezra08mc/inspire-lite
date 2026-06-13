@@ -1,5 +1,4 @@
 name: CD - Deploy to Server
-
 on:
   push:
     branches: [ active ]
@@ -17,5 +16,9 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           cd /var/www/html/inspire-lite/dev
-          git checkout active     
-          git pull origin active 
+          git fetch origin
+          git show-ref --verify --quiet refs/heads/active || git checkout -b active origin/active
+          git checkout active
+          git config pull.rebase false
+          git reset --hard origin/active
+          git pull origin active
