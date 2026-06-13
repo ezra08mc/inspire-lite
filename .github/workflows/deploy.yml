@@ -17,5 +17,5 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           cd /var/www/html/inspire-lite/dev
-          git checkout dev     
-          git pull origin dev 
+          git checkout active     
+          git pull origin active 
