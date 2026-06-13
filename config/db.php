@@ -4,38 +4,27 @@ $envFile = __DIR__ . '/../.env';
 
 if (is_file($envFile)) {
     $envLines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
     foreach ($envLines as $line) {
         $line = trim($line);
-
-        if ($line === '' || strpos($line, '#') === 0 || strpos($line, '=') === false) {
-            continue;
-        }
+        if ($line === '' || strpos($line, '#') === 0 || strpos($line, '=') === false) continue;
 
         [$key, $value] = explode('=', $line, 2);
         $key = trim($key);
-        $value = trim($value);
+        $value = trim($value, " \t\n\r\0\x0B\"'");
 
-        if ($value !== '' && (
-            ($value[0] === '"' && substr($value, -1) === '"') ||
-            ($value[0] === "'" && substr($value, -1) === "'")
-        )) {
-            $value = substr($value, 1, -1);
-        }
-
-        if ($key !== '' && getenv($key) === false) {
-            putenv($key . '=' . $value);
+        if (!array_key_exists($key, $_ENV)) {
+            putenv("$key=$value");
             $_ENV[$key] = $value;
             $_SERVER[$key] = $value;
         }
     }
 }
 
-$host = getenv('DB_HOST') ?: 'localhost';
-$db = getenv('DB_NAME') ?: 'inspire_lite_db';
-$user = getenv('DB_USER') ?: 'dev';
-$password = getenv('DB_PASS') ?: 'devinspirelite';
-$charset = getenv('DB_CHARSET') ?: 'utf8mb4';
+$host = $_ENV['DB_HOST'] ?? 'localhost';
+$db   = $_ENV['DB_NAME'] ?? 'inspire_lite_db';
+$user = $_ENV['DB_USER'] ?? 'dev';
+$pass = $_ENV['DB_PASS'] ?? 'devinspirelite';
+$charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 
@@ -46,7 +35,8 @@ $options = [
 ];
 
 try {
-    $pdo = new PDO($dsn, $user, $password, $options);
+    $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-    die('Database connection failed. Check your .env credentials.');
+    error_log($e->getMessage()); 
+    die('Database connection failed.');
 }
