@@ -1,6 +1,7 @@
 <?php
-
 session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 require_once 'config/db.php';
 
@@ -9,24 +10,28 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-$username = trim($_POST['username']);
-$password = trim($_POST['password']);
+$username = trim($_POST['username'] ?? '');
+$password = trim($_POST['password'] ?? '');
 
-$sql = "SELECT * FROM users WHERE username = ?";
+if (empty($username) || empty($password)) {
+    die("Username dan password wajib diisi.");
+}
+
+$sql = "SELECT id, name, password, role FROM users WHERE username = ? LIMIT 1";
 
 $stmt = mysqli_prepare($conn, $sql);
 
-mysqli_stmt_bind_param(
-    $stmt,
-    "s",
-    $username
-);
+if (!$stmt) {
+    die("Query error: " . mysqli_error($conn));
+}
 
+mysqli_stmt_bind_param($stmt, "s", $username);
 mysqli_stmt_execute($stmt);
 
 $result = mysqli_stmt_get_result($stmt);
-
 $user = mysqli_fetch_assoc($result);
+
+mysqli_stmt_close($stmt);
 
 if (!$user) {
     die("User not found");
@@ -36,15 +41,20 @@ if ($password !== $user['password']) {
     die("Wrong password");
 }
 
+session_regenerate_id(true);
+
 $_SESSION['user_id'] = $user['id'];
 $_SESSION['name'] = $user['name'];
 $_SESSION['role'] = $user['role'];
-if ($user['role'] === 'admin') {
+
+$role = strtolower($user['role']);
+
+if ($role === 'admin') {
     header("Location: admin/dashboard.php");
     exit();
-}
-
-if ($user["role"] === "student") {
-    header("Location: students/dashboard.php"); // Sesuaikan dengan nama foldernya
+} elseif ($role === 'student') {
+    header("Location: students/dashboard.php");
     exit();
+} else {
+    die("Role tidak dikenali");
 }
